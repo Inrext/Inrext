@@ -31,6 +31,7 @@ type Property = {
   propertyType: string;
   propertyName: string;
   price: string;
+  minSize: string;
 };
 
 const Properties = () => {
@@ -47,7 +48,10 @@ const Properties = () => {
   const [nextArrowStyle, setNextArrowStyle] = useState({});
   const [prevArrowStyle, setPrevArrowStyle] = useState({});
 
+  const hasFetched = React.useRef(false);
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     setLoading(true);
     propertyService.getAllProperties('', 1, 100, "true")
       .then((res) => {
@@ -229,15 +233,10 @@ const Properties = () => {
           <p className="raleway text-white text-center font-semibold lg:text-[1.7rem] md:text-[1.4rem] text-[0.6rem] lg:leading-normal md:leading-[1.8rem] leading-[1rem] uppercase">
             Your Dream Property is Just a Click Away – Start Your Search Today!
           </p>
-          {/* <Link
-            to="/properties"
-            className="w-fit text-white px-6 uppercase text-[0.6rem] py-2 lg:rounded-lg rounded-full bg-blue-500 hover:bg-blue-600 font-semibold"
-          >
-            EXPLORE OUR LISTING
-          </Link> */}
+          
         </div>
       </div>
-      {/* ===================================== */}
+      
       <div
         className={`overflow-hidden  ${
           isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"
@@ -298,11 +297,7 @@ const Properties = () => {
                           </h1>
                           <p className="capitalize text-black lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] flex items-center gap-x-0">
                             <IoLocationOutline />{" "}
-                            {/* <span>
-                              {properties.location.length > 20
-                                ? properties.location.substring(0, 20) + "..."
-                                : properties.location}
-                            </span> */}
+                           
                             <span>
                               {Array.isArray(properties.location)
                                 ? properties.location[0].length > 15
@@ -317,14 +312,9 @@ const Properties = () => {
                           <div className="flex items-center justify-between text-[1rem]">
                             <p className="capitalize text-black lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] flex items-center gap-x-2">
                               <SlSizeFullscreen className="" />{" "}
-                              {/* <span>{properties.size}</span> */}
+                              { <span>{properties.minSize}</span>  }
                             </p>
-                            {/* <p className="text-gray-500 flex items-center gap-x-2">
-                          <FiDroplet /> <span>3</span>
-                        </p>
-                        <p className="text-gray-500 flex items-center gap-x-2">
-                          <FaBed /> <span>2</span>
-                        </p> */}
+                             
                           </div>
                         </div>
                       </div>
@@ -332,12 +322,10 @@ const Properties = () => {
                   </div>
                 ))}
               </Slider>
-              {/* <div className="w-[4.5rem] h-[1.9rem] bg-white relative rounded-full lg:bottom-[0rem] md:bottom-[2rem] bottom-[2rem] lg:left-[73.5rem] md:left-[42rem] left-[17.8rem]"></div> */}
-            </div>
+             </div>
           </div>
         </div>
-        {/* ===================== exclusiveListing ================================ */}
-        <div
+         <div
           className="overflow-hidden pb-[3rem]"
           data-aos="fade-up"
           data-aos-duration="1200"
@@ -426,17 +414,12 @@ const Properties = () => {
                         <div className="flex justify-between mt-auto items-center text-blue-500 font-medium">
                           <p className="flex items-center capitalize text-blue-500 lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem]">
                             <SlSizeFullscreen className="" />
-                            {/* <span className="ps-1">{properties.size}</span> */}
-                          </p>
+                           </p>
                         </div>
                         <div className="flex flex-wrap justify-between mt-auto items-center text-blue-500 font-medium">
                           <p className="flex items-center capitalize text-blue-500 lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem]">
                             <IoLocationOutline />
                             <span>
-                              {/* {properties.location} */}
-                              {/* {properties.location.length > 15
-                                ? properties.location.substring(0, 15) + "..."
-                                : properties.location} */}
                               <span>
                                 {Array.isArray(properties.location)
                                   ? properties.location[0].length > 15
@@ -505,7 +488,7 @@ const Properties = () => {
             </div>
           </div>
         </div>
-        {/* ================ Step By StepGuide ========================== */}
+        
         <div
           className="overflow-hidden lg: py-[0rem]"
           data-aos="fade-up"
@@ -579,8 +562,7 @@ const Properties = () => {
           <div className="w-[0rem] h-[0rem] absolute  pointer-events-none" />
         </div>
       </div>
-      {/* ================ Why Choose Us? ========================== */}
-      <div>
+       <div>
         <WhyChooseUs />
       </div>
     </>

@@ -14,8 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Map updater component to handle location changes
-const MapUpdater = ({ center }: { center: [number, number] }) => {
+ const MapUpdater = ({ center }: { center: [number, number] }) => {
   const map = useMap();
   React.useEffect(() => {
     map.setView(center, map.getZoom());
