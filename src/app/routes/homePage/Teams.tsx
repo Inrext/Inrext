@@ -1,6 +1,16 @@
 "use client";
+// TypeScript type for a team member
+export type TeamMember = {
+  _id: string;
+  name: string;
+  position?: string;
+  image?: string;
+  profileImages?: string[];
+  category?: string;
+};
 
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useTheme } from "../../content/ThemeContext";
 import Link from "next/link";
 import AOS from "aos";
@@ -10,124 +20,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { FaTelegram } from "react-icons/fa";
 
-// TypeScript type for a team member
-type TeamMember = {
-  id: number;
-  name: string;
-  position: string;
-  image: string;
-};
-
-const teamMembers: TeamMember[] = [
-  {
-    id: 1,
-    name: "Mr. Shiva Karki",
-    position: "Assistant Vice President",
-    image: "/images/Our team/1.jpg",
-  },
-  {
-    id: 3,
-    name: "Mr. Sartaj Ali",
-    position: "Assistant Vice President",
-    image: "/images/Our team/3.jpg",
-  },
-  {
-    id: 4,
-    name: "Ms. Pooja",
-    position: "Assistant Vice President",
-    image: "/images/Our team/4.jpg",
-  },
-  {
-    id: 5,
-    name: "Mr. Raghunandan Kumar",
-    position: "Assistant Vice President",
-    image: "/images/Our team/5.jpg",
-  },
-  {
-    id: 6,
-    name: "Mr. Rahul Singh Parihar",
-    position: "Chief Project Officer (CPO) - KW Delhi 6 ",
-    image: "/images/Our team/6.jpg",
-  },
-  {
-    id: 7,
-    name: "Mr. Shivam Tripathi",
-    position: "Chief Project Officer (CPO) – Dholera ( Sui Generis Residenncy) ",
-    image: "/images/Our team/7.jpg",
-  },
-  {
-    id: 8,
-    name: "Mr. Santosh Kumar Singh",
-    position: "Assistant Vice President",
-    image: "/images/Our team/8.jpg",
-  },
-  {
-    id: 9,
-    name: "Mr. Nitin Kumar Sharma",
-    position: "Assistant Vice President",
-    image: "/images/Our team/9.jpg",
-  },
-  {
-    id: 10,
-    name: "Mr. Pankaj Mohapatra",
-    position: "Assistant Vice President",
-    image: "/images/Our team/10.jpg",
-  },
-  {
-    id: 12,
-    name: "Mr. Dinesh Kumar Diwakar",
-    position: "Assistant Vice President",
-    image: "/images/Our team/12.jpg",
-  },
-  {
-    id: 13,
-    name: "Mr. Biraj Kumar Byapari",
-    position: "Assistant Vice President",
-    image: "/images/Our team/13.jpg",
-  },
-  {
-    id: 14,
-    name: "Mr. S.S. Dwivedi",
-    position: "Assistant Vice President",
-    image: "/images/Our team/14.jpg",
-  },
-  {
-    id: 15,
-    name: "Mr. Sujeet Mehta",
-    position: "Assistant Vice President",
-    image: "/images/Our team/15.jpg",
-  },
-  {
-    id: 16,
-    name: "Mr. Deepak Kumar",
-    position: "Assistant Vice President",
-    image: "/images/Our team/16.jpg",
-  },
-  {
-    id: 17,
-    name: "Mohd. Kaleem",
-    position: "Assistant Vice President",
-    image: "/images/Our team/17.jpg",
-  },
-  {
-    id: 18,
-    name: "Mr. Manish Kumar",
-    position: "Assistant Vice President",
-    image: "/images/Our team/18.jpg",
-  },
-  {
-    id: 19,
-    name: "Mr. Rajendra Chauhan",
-    position: "Assistant Vice President",
-    image: "/images/Our team/19.jpg",
-  },
-  {
-    id: 20,
-    name: "Mr. Subodh Khantwal",
-    position: "Assistant Vice President",
-    image: "/images/Our team/20.jpg",
-  },
-];
 
 // Responsive style helper for Next/SSR
 function responsiveStyles(breakpoints: any) {
@@ -251,14 +143,48 @@ const settings = {
   ],
 };
 
+
 const Teams: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   useEffect(() => {
-    AOS.init({
-      once: true,
-    });
+    AOS.init({ once: true });
+    // Fetch Growth-Navigators from backend
+    async function fetchGrowthNavigators() {
+      try {
+        const res = await axios.get("/api/pillar?category=growth-navigators");
+        setTeamMembers(res.data);
+      } catch (error) {
+        console.error("Error fetching Growth-Navigators:", error);
+      }
+    }
+    fetchGrowthNavigators();
   }, []);
+
+  // Helper to get correct image src
+  function getImageSrc(member: TeamMember): string {
+    if (member.image) {
+      if (member.image.startsWith("http://") || member.image.startsWith("https://")) {
+        return member.image;
+      }
+      return `/images/${member.image.replace(/^\/images\//, "")}`;
+    }
+    if (member.profileImages && member.profileImages.length > 0) {
+      let img = member.profileImages[0];
+      // If profileImages is array of objects, use url property
+      if (typeof img === "object" && (img as any).url) {
+        img = (img as any).url;
+      }
+      if (typeof img === "string" && (img.startsWith("http://") || img.startsWith("https://"))) {
+        return img;
+      }
+      if (typeof img === "string") {
+        return `/images/${img.replace(/^\/images\//, "")}`;
+      }
+    }
+    return "/images/default-profile.png";
+  }
 
   return (
     <div
@@ -292,7 +218,7 @@ const Teams: React.FC = () => {
               className="overflow-hidden pb-[0rem] lg:h-[26rem] h-[26rem]"
             >
               {teamMembers.map((member) => (
-                <div key={member.id} className="px-[0.6rem]">
+                <div key={member._id} className="px-[0.6rem]">
                   <Link href={`/team/${encodeURIComponent(member.name)}`}>
                     <div
                       className={`h-full flex flex-col justify-center items-center px-5 lg:mx-0 mx-5 rounded-xl group cursor-pointer ${
@@ -305,7 +231,7 @@ const Teams: React.FC = () => {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           className="w-full h-full object-contain bg-white rounded-xl"
-                          src={member.image}
+                          src={getImageSrc(member)}
                           alt={member.name}
                         />
                       </div>
