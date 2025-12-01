@@ -21,7 +21,7 @@ import Image from "next/image";
 import { propertyService } from "../../services/propertyService";
 
 type Property = {
-    images?: any;
+  images?: any;
   _id?: string;
   slug?: string;
   projectName: string;
@@ -31,7 +31,7 @@ type Property = {
   propertyType: string;
   propertyName: string;
   price: string;
-  minSize: string;
+  minSize?: string;
 };
 
 const Properties = () => {
@@ -43,6 +43,31 @@ const Properties = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 8;
+
+  // Derived lists for featured and exclusive
+  // Only show parent (main project) cards in featuredProperties, deduplicated by _id
+  const parentFeatured = properties.filter(
+    (p: any) => p.isPublic === true && (!p.parentId || p.parentId === null)
+  );
+  // Deduplicate by _id
+  const seen = new Set();
+  const featuredProperties = parentFeatured.filter((p: any) => {
+    if (!p._id) return false;
+    if (seen.has(p._id)) return false;
+    seen.add(p._id);
+    return true;
+  });
+
+  // Runtime warning for duplicate featured cards (for debugging)
+  if (typeof window !== 'undefined') {
+    const ids = parentFeatured.map((p: any) => p._id).filter(Boolean);
+    const dupes = ids.filter((id, idx) => ids.indexOf(id) !== idx);
+    if (dupes.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn('Duplicate featuredProperties detected (by _id):', dupes);
+    }
+  }
+  const exclusiveListing = properties;
   const [gradientPos, setGradientPos] = useState({ x: 50, y: 50 });
   const [activeSlide, setActiveSlide] = useState(0);
   const [nextArrowStyle, setNextArrowStyle] = useState({});
@@ -179,11 +204,11 @@ const Properties = () => {
     ],
   };
 
-  // Pagination logic
+  // Pagination logic for exclusiveListing
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentProperties = properties.slice(indexOfFirstCard, indexOfLastCard);
-  const totalPages = Math.ceil(properties.length / cardsPerPage);
+  const currentProperties = exclusiveListing.slice(indexOfFirstCard, indexOfLastCard);
+  const totalPages = Math.ceil(exclusiveListing.length / cardsPerPage);
 
   const paginate = (pageNumber: number) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -277,44 +302,41 @@ const Properties = () => {
           <div className="max-w-7xl mx-auto px-0 pt-[0rem] pb-[0rem] overflow-hidden">
             <div className="slider-container pb-[3rem] overflow-hidden ps-0 pe-[0rem]">
               <Slider {...settings} className=" h-[22rem] pt-[2.5rem]">
-                {currentProperties.map((properties, index) => (
-                  <div key={properties._id || properties.propertyName || properties.projectName} className="px-[0.8rem]">
+                {featuredProperties.map((property, index) => (
+                  <div key={property._id || property.propertyName || property.projectName} className="px-[0.8rem]">
                     <Link
                       href={`/properties/${encodeURIComponent(
-                        properties.propertyName.replace(/\s+/g, "-").replace(/-project$/i, '').toLowerCase()
+                        property.propertyName.replace(/\s+/g, "-").replace(/-project$/i, '').toLowerCase()
                       )}`}
                     >
                       <div
                         className="cursor-pointer relative h-[12rem] flex flex-col justify-center items-center bg-cover bg-center transition-all duration-500 hover:scale-[1.05] rounded-lg"
                         style={{
-                          backgroundImage: `url('${Array.isArray(properties.images) && properties.images.length > 0 ? (properties.images[0].url || properties.images[0]) : ''}')`,
+                          backgroundImage: `url('${Array.isArray(property.images) && property.images.length > 0 ? (property.images[0].url || property.images[0]) : ''}')`,
                         }}
                       >
                         <div className="relative top-[6.8rem] bg-white p-4 rounded w-[16rem] flex flex-col gap-y-2.5">
                           <h1 className="capitalize text-black lg:text-[1.3rem] md:text-[1.2rem] text-[1.1rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] font-semibold flex items-center gap-x-0 ">
                             <MdOutlineCurrencyRupee />
-                            <span>{properties.price}</span>
+                            <span>{property.price}</span>
                           </h1>
                           <p className="capitalize text-black lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] flex items-center gap-x-0">
                             <IoLocationOutline />{" "}
-                           
                             <span>
-                              {Array.isArray(properties.location)
-                                ? properties.location[0].length > 15
-                                  ? properties.location[0].substring(0, 15) +
-                                    "..."
-                                  : properties.location[0]
-                                : properties.location.length > 15
-                                ? properties.location.substring(0, 15) + "..."
-                                : properties.location}
+                              {Array.isArray(property.location)
+                                ? property.location[0].length > 15
+                                  ? property.location[0].substring(0, 15) + "..."
+                                  : property.location[0]
+                                : property.location.length > 15
+                                ? property.location.substring(0, 15) + "..."
+                                : property.location}
                             </span>
                           </p>
                           <div className="flex items-center justify-between text-[1rem]">
                             <p className="capitalize text-black lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] flex items-center gap-x-2">
                               <SlSizeFullscreen className="" />{" "}
-                              { <span>{properties.minSize}</span>  }
+                              { <span>{property.minSize}</span>  }
                             </p>
-                             
                           </div>
                         </div>
                       </div>
@@ -322,7 +344,7 @@ const Properties = () => {
                   </div>
                 ))}
               </Slider>
-             </div>
+            </div>
           </div>
         </div>
          <div
