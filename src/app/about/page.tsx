@@ -1,8 +1,52 @@
-/* eslint-disable react/display-name */
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+
+// ================= TYPES & HELPERS =================
+type ProfileImage = string | { url: string; [key: string]: any };
+type PillarMember = {
+  _id: string;
+  name: string;
+  category: string;
+  profileImages?: ProfileImage[];
+  designation?: string;
+  about?: string;
+  experience?: string;
+  projects?: any[];
+  expertise?: any[];
+  skills?: any[];
+  isActive?: boolean;
+  isFeatured?: boolean;
+  image?: string; // fallback for legacy code
+  position?: string; // fallback for legacy code
+};
+ 
+function getImageSrc(member: PillarMember): string {
+  // 1. Check legacy image field
+  if (member.image) {
+    if (member.image.startsWith("http://") || member.image.startsWith("https://")) return member.image;
+    if (member.image.startsWith("/uploads/")) return member.image; // backend static path
+    if (member.image !== "default-profile.png") return `/images/${member.image.replace(/^\/images\//, "")}`;
+  }
+  // 2. Check profileImages array (string or object)
+  if (member.profileImages && member.profileImages.length > 0) {
+    for (const img of member.profileImages) {
+      if (typeof img === "object" && img !== null && 'url' in img && typeof img.url === 'string') {
+        const url = img.url;
+        if (url.startsWith("http://") || url.startsWith("https://")) return url;
+        if (url.startsWith("/uploads/")) return url;
+        if (url && url !== "default-profile.png") return `/images/${url.replace(/^\/images\//, "")}`;
+      }
+      if (typeof img === "string") {
+        if (img.startsWith("http://") || img.startsWith("https://")) return img;
+        if (img.startsWith("/uploads/")) return img;
+        if (img !== "default-profile.png") return `/images/${img.replace(/^\/images\//, "")}`;
+      }
+    }
+  }
+  // 3. Fallback: use a public avatar service
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`;
+}
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { fetchPillarsByCategory } from "../../services/pillarService";
 import Image from "next/image";
 import { useTheme } from "../content/ThemeContext";
 import Link from "next/link";
@@ -34,6 +78,7 @@ const CounterBox = React.memo(({ value, label, isDarkMode }: CounterBoxProps) =>
 ));
 
 const AboutPage = () => {
+    // (Debug log moved to useEffect below)
   const { isDarkMode } = useTheme();
   const [isVisible, setIsVisible] = useState(false);
   const statsRef = useRef<HTMLDivElement | null>(null);
@@ -46,80 +91,27 @@ const AboutPage = () => {
   const [guides, setGuides] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const visionaries = [
-    {
-      id: 1,
-      name: "Mr. Amit Kumar Srivastava ",
-      position: "Founder & Managing Director",
-      image: "/images/Our team/Amit sir.jpg",
-    },
-    {
-      id: 2,
-      name: "Mr. Awadhesh Kumar",
-      position: "Joint Managing Director",
-      image: "/images/Our team/Awadhesh sir.jpg",
-    },
-  ];
+  // State for pillar sections
+  const [visionaries, setVisionaries] = useState<PillarMember[]>([]);
+  const [strategicForce, setStrategicForce] = useState<PillarMember[]>([]);
+  const [powerhouseTeam, setPowerhouseTeam] = useState<PillarMember[]>([]);
+  const [growthNavigators, setGrowthNavigators] = useState<PillarMember[]>([]);
 
-  const Strategic = [
-    {
-      id: 1,
-      name: "Mr. Awadhesh Kumar",
-      position: "Joint Managing Director",
-      image: "/images/Our team/Awadhesh sir.jpg",
-    },
-    {
-      id: 2,
-      name: "Mr. Rahul Singh Parihar",
-      position: " CPO - KW Delhi 6 ",
-      image: "/images/Our team/6.jpg",
-    },
-    {
-      id: 3,
-      name: "Mr. Shivam Tripathi",
-      position: " CPO – Dholera ( Sui Generis Residenncy) ",
-      image: "/images/Our team/7.jpg",
-    },
-  ];
+  // Debug: Log visionaries array to check for duplicates
+  React.useEffect(() => {
+    console.log('Visionaries data:', visionaries);
+  }, [visionaries]);
 
-  const powerhouse = [
-    {
-      id: 1,
-      name: "Mr. Sanjay Singh",
-      position: "Digital Marketing executive",
-      image: "/images/Our team/Sanjay.jpg",
-    },
-    {
-      id: 2,
-      name: "Mr. Ram Prakash Kumar",
-      position: "CRM-Head",
-      image: "/images/Our team/Ram sir.jpg",
-    },
-    {
-      id: 3,
-      name: "Mr. Pratap Shankar",
-      position: "Accountant",
-      image: "/images/Our team/Pratap sir.jpg",
-    },
-    {
-      id: 4,
-      name: "Mr. Manish Kumar",
-      position: "Admin Executive",
-      image: "/images/Our team/Manish.jpg",
-    },
-    {
-      id: 5,
-      name: "Janvi Sharma",
-      position: "Graphic Designer",
-      image: "/images/Our team/Janvi.jpg",
-    },
-    {
-      id: 6,
-      name: "Bharti Chaudhary",
-      position: "HR Head (Branch : Sec. - 3, Noida)",
-      image: "/images/Our team/Bharti.jpg",
-    },
-  ];
+  // Fetch pillar data using pillarService
+  useEffect(() => {
+    async function fetchAllPillars() {
+      setVisionaries(await fetchPillarsByCategory("the-visionaries"));
+      setStrategicForce(await fetchPillarsByCategory("the-strategic-force"));
+      setPowerhouseTeam(await fetchPillarsByCategory("the-powerhouse-team"));
+      setGrowthNavigators(await fetchPillarsByCategory("growth-navigators"));
+    }
+    fetchAllPillars();
+  }, []);
 
   // Consolidated counter state
   const [counters, setCounters] = useState({
@@ -351,7 +343,7 @@ const AboutPage = () => {
               <p
                 className={`lg:text-[0.9rem] md:text-[0.9rem] text-[0.8rem] lg:leading-[1.25rem] leading-[1.1rem] ${
                   isDarkMode ? "text-white" : "text-gray-900"
-                } leading-6`}
+                } leading-6`}  
               >
                 Inrext is where real estate meets vision. Driven by leaders with
                 10–12+ years of industry expertise, we go beyond transactions to
@@ -988,7 +980,7 @@ const AboutPage = () => {
             <div className="flex  justify-center">
               <div className="grid lg:grid-cols-2 gap-4 pb-[0rem]">
                 {visionaries.map((member) => (
-                  <div key={member.id} className="px-[0.6rem]">
+                  <div key={member._id} className="px-[0.6rem]">
                     <Link href={`/team/${encodeURIComponent(member.name)}`}>
                       <div
                         className={`h-full flex flex-col justify-center items-center px-5 rounded-xl group cursor-pointer ${
@@ -1000,11 +992,12 @@ const AboutPage = () => {
                         <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
                           <Image
                             className="w-full h-full object-contain bg-white rounded-xl"
-                            src={member.image}
+                            src={getImageSrc(member) || "/images/default-profile.png"}
                             alt={member.name}
                             width={240}
                             height={192}
                             priority
+                            onError={e => { e.currentTarget.src = "/images/default-profile.png"; }}
                           />
                         </div>
                         <div className="flex flex-col py-5 w-full justify-center text-center items-center">
@@ -1048,7 +1041,7 @@ const AboutPage = () => {
                 className="overflow-hidden pb-[0rem] lg:h-[26rem] h-[26rem]"
               >
                 {visionaries.map((member) => (
-                  <div key={member.id} className="me-[1.6rem] px-[0.6rem]">
+                  <div key={member._id} className="me-[1.6rem] px-[0.6rem]">
                     <Link
                       className="flex flex-col items-center justify-center"
                       href={`/team/${encodeURIComponent(member.name)}`}
@@ -1063,7 +1056,7 @@ const AboutPage = () => {
                         <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
                           <Image
                             className="w-full h-full object-contain bg-white rounded-xl"
-                            src={member.image}
+                            src={getImageSrc(member)}
                             alt={member.name}
                             width={240}
                             height={192}
@@ -1128,8 +1121,8 @@ const AboutPage = () => {
           <div className="hidden lg:block">
             <div className="flex justify-center">
               <div className="grid lg:grid-cols-3 gap-4 pb-[0rem]">
-                {Strategic.map((member) => (
-                  <div key={member.id} className="px-[0.6rem]">
+                {strategicForce.map((member) => (
+                  <div key={member._id} className="px-[0.6rem]">
                     <Link href={`/team/${encodeURIComponent(member.name)}`}>
                       <div
                         className={`h-full flex flex-col justify-center items-center px-5 rounded-xl group cursor-pointer ${
@@ -1141,7 +1134,7 @@ const AboutPage = () => {
                         <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
                           <Image
                             className="w-full h-full object-contain bg-white rounded-xl"
-                            src={member.image}
+                            src={getImageSrc(member)}
                             alt={member.name}
                             width={240}
                             height={192}
@@ -1186,8 +1179,8 @@ const AboutPage = () => {
                 {...settings}
                 className="overflow-hidden pb-[0rem] lg:h-[26rem] h-[26rem]"
               >
-                {Strategic.map((member) => (
-                  <div key={member.id} className="me-[1.6rem] px-[0.6rem]">
+                {strategicForce.map((member) => (
+                  <div key={member._id} className="me-[1.6rem] px-[0.6rem]">
                     <Link
                       className="flex flex-col items-center justify-center"
                       href={`/team/${encodeURIComponent(member.name)}`}
@@ -1202,7 +1195,7 @@ const AboutPage = () => {
                         <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
                           <Image
                             className="w-full h-full object-contain bg-white rounded-xl"
-                            src={member.image}
+                            src={getImageSrc(member)}
                             alt={member.name}
                             width={240}
                             height={192}
@@ -1243,7 +1236,6 @@ const AboutPage = () => {
       </div>
       {/*  */}
       <Teams />
-      {/* the Powerhouse Team */}
       <div
         className={`overflow-hidden ${
           isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"
@@ -1269,60 +1261,64 @@ const AboutPage = () => {
               {...settings}
               className="overflow-hidden pb-[0rem] lg:h-[26rem] h-[26rem]"
             >
-              {powerhouse.map((member) => (
-                <div key={member.id} className="me-[1.6rem] px-[0.6rem]">
-                  {/* <Link to={`/team/${encodeURIComponent(member.name)}`}> */}
-                  <div
-                    className={`h-full flex flex-col justify-center items-center px-5 lg:mx-0 mx-5 rounded-xl group cursor-pointer ${
-                      isDarkMode
-                        ? "border-2 border-blue-500"
-                        : "border-2 border-blue-500"
-                    }`}
-                  >
-                    <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
-                      <Image
-                        className="w-full h-full object-contain bg-white rounded-xl"
-                        src={member.image}
-                        alt={member.name}
-                        width={240}
-                        height={192}
-                        priority
-                      />
+              {(() => {
+                // Filter unique by normalized name and category
+                const normalize = (str: string) => (str || '').trim().toLowerCase();
+                const uniqueMembers = powerhouseTeam.filter((v, i, a) =>
+                  a.findIndex(x => normalize(x.name) === normalize(v.name) && normalize(x.category) === normalize(v.category)) === i
+                );
+                return uniqueMembers.map((member) => (
+                  <Link key={member._id} href={`/team/${encodeURIComponent(member.name)}`} className="me-[1.6rem] px-[0.6rem] block group">
+                    <div
+                      className={`h-full flex flex-col justify-center items-center px-5 lg:mx-0 mx-5 rounded-xl group cursor-pointer ${
+                        isDarkMode
+                          ? "border-2 border-blue-500"
+                          : "border-2 border-blue-500"
+                      } transition-shadow hover:shadow-lg`}
+                    >
+                      <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
+                        <Image
+                          className="w-full h-full object-contain bg-white rounded-xl"
+                          src={getImageSrc(member)}
+                          alt={member.name}
+                          width={240}
+                          height={192}
+                          priority
+                        />
+                      </div>
+                      <div className="flex flex-col py-5 w-full justify-center text-center items-center">
+                        <h1 className="text-blue-500 font-semibold uppercase text-[1rem] leading-[1rem]">
+                          {member.name}
+                        </h1>
+                        <p
+                          className={`capitalize text-[0.9rem] ${
+                            isDarkMode ? "text-white" : "text-gray-500"
+                          }`}
+                        >
+                          {member.position}
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500"
+                          tabIndex={-1}
+                          aria-label="Say Hello"
+                        >
+                          Say Hello👋{" "}
+                          <span className="text-[1.50rem]">
+                            <FaTelegram />
+                          </span>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex flex-col py-5 w-full justify-center text-center items-center">
-                      <h1 className="text-blue-500 font-semibold uppercase text-[1rem] leading-[1rem]">
-                        {member.name}
-                      </h1>
-                      <p
-                        className={`capitalize text-[0.9rem] ${
-                          isDarkMode ? "text-white" : "text-gray-500"
-                        }`}
-                      >
-                        {member.position}
-                      </p>
-                      <button
-                        type="button"
-                        className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500"
-                        tabIndex={-1}
-                        aria-label="Say Hello"
-                      >
-                        Say Hello👋{" "}
-                        <span className="text-[1.50rem]">
-                          <FaTelegram />
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                  {/* </Link> */}
-                </div>
-              ))}
+                  </Link>
+                ));
+              })()}
             </Slider>
           </div>
         </div>
       </div>
       {/*  */}
       <Testimonial />
-      {/*  */}
       <WorkWithUs />
     </>
   );
