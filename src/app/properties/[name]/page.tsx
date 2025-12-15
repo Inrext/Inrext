@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+type ChildProperty = any;
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "../../content/ThemeContext";
@@ -24,6 +25,9 @@ type Property = {
   status: string[];
   price: string;
   size: string;
+  minSize?: string;
+  maxSize?: string;
+  sizeUnit?: string;
   images: PropertyImage[];
   locationMap: string;
   mapLocation?: {
@@ -34,7 +38,12 @@ type Property = {
 
 
 
+
 const SingleProperties: React.FC = () => {
+  const [showChildModal, setShowChildModal] = useState(false);
+  const [childDetails, setChildDetails] = useState<ChildProperty | null>(null);
+  const [childImages, setChildImages] = useState<string[]>([]);
+  const [childLoading, setChildLoading] = useState(false);
   const params = useParams();
   const name =
     typeof params?.name === "string"
@@ -48,7 +57,7 @@ const SingleProperties: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
-
+  const [subProperties, setSubProperties] = useState<any[]>([]);
 
   useEffect(() => {
     if (!name) return;
@@ -66,8 +75,20 @@ const SingleProperties: React.FC = () => {
         }
         setProperty(data);
         setSelectedImage(0);
+
+        // Fetch subproperties (children) for this property
+        if (data && data._id) {
+          const subRes = await fetch(`/api/v0/property?parentId=${data._id}`);
+          const subResult = await subRes.json();
+          // Only keep subproperties with hierarchyLevel >= 1 and parentId matches current property _id
+          const children = (subResult.data || []).filter((sp: any) => sp.hierarchyLevel >= 1 && sp.parentId === data._id);
+          setSubProperties(children);
+        } else {
+          setSubProperties([]);
+        }
       } catch (err) {
         setProperty(null);
+        setSubProperties([]);
       }
     };
     fetchProperty();
@@ -76,7 +97,6 @@ const SingleProperties: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
 
   if (!property) {
     return <div>Loading...</div>;
@@ -127,8 +147,16 @@ const SingleProperties: React.FC = () => {
                 isDarkMode ? "text-white " : "text-black"
               }`}
             >
-              <MdOutlineCurrencyRupee />
+              {/* <MdOutlineCurrencyRupee /> */}
               {property.price}
+            </p>
+            <p
+              className={`raleway lg:text-[1rem] md:text-[0.9rem] text-[0.8rem] flex items-center mt-2 ${
+                isDarkMode ? "text-white " : "text-black"
+              }`}
+            >
+              <span className="font-semibold mr-2">Min Size:</span>
+              <span>{property.minSize ? `${property.minSize}${property.sizeUnit ? ` ${property.sizeUnit}` : ''}` : '—'}</span>
             </p>
             {/* Show Interest Button */}
             <button
@@ -207,6 +235,199 @@ const SingleProperties: React.FC = () => {
               <p>{property.description}</p>
             </div>
           </div>
+          {/* Child Property Cards */}
+          <div className="py-5 flex flex-col gap-8 lg:mx-10">
+            {subProperties.length === 0 ? (
+              <div className="col-span-full text-center text-gray-500">No sub-properties found.</div>
+            ) : (
+              subProperties.map((child, idx) => {
+                // Normalize images for card
+                let cardImages: string[] = [];
+                if (Array.isArray(child.images) && child.images.length > 0) {
+                  cardImages = child.images
+                    .map((img: any) => {
+                      if (typeof img === "string") return img;
+                      if (typeof img === "object" && img && "url" in img) return img.url;
+                      return undefined;
+                    })
+                    .filter((img: any): img is string => Boolean(img));
+                }
+                if (cardImages.length === 0) cardImages = ["/images/no-image-available.png"];
+
+                return (
+                  <div
+                    key={child._id || idx}
+                    className={`rounded-xl shadow-lg border flex flex-row transition-colors duration-300 overflow-hidden w-full max-w-3xl ${isDarkMode ? 'bg-gray-900 border-blue-900 text-white' : 'bg-white border-blue-200 text-black'}`}
+                    style={{ minHeight: '120px' }}
+                  >
+                    {/* Image Section */}
+                    <div className="w-40 h-40 relative">
+                      <Image
+                        src={cardImages[0]}
+                        alt={child.projectName || child.propertyName || 'Child Property'}
+                        width={100}
+                        height={60}
+                        className="object-cover w-full h-full"
+                        style={{ objectFit: "cover" }}
+                      />
+                      {cardImages.length > 1 && (
+                        <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="inline-block" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.5 8a3.5 3.5 0 1 1 7 0a3.5 3.5 0 0 1-7 0zm3.5-5a5 5 0 1 0 0 10A5 5 0 0 0 8 3z"/></svg>
+                          {cardImages.length}
+                        </div>
+                      )}
+                    </div>
+                    {/* Details Section */}
+                    <div className="flex flex-col justify-between p-2">
+                      <div>
+                        <div className="flex flex-row items-center gap-1 ">
+                          <span className="font-bold text-2xl">
+                            {child.projectName || child.propertyName || 'Child Property'}
+                          </span>
+                        </div>
+                        {/* Example: Flexible Move In Dates and Price */}
+                        <div className="flex flex-row items-center gap-1 mb-3">
+                          {child.moveInLabel && (
+                            <span className="text-sm px-1 py-1 rounded border border-green-500 text-green-700 font-semibold bg-green-50">{child.moveInLabel}</span>
+                          )}
+                          {child.price && (
+                            <span className="text-base font-semibold">Starting From: <span className="text-black dark:text-white">{child.price}</span></span>
+                          )}
+                        </div>
+                        {/* Features Row */}
+                        <div className="flex flex-wrap items-center gap-6 text-base mb-3">
+                          {child.propertyType && <span className="flex items-center gap-1"><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/></svg>{child.propertyType}</span>}
+                          {child.roomType && <span className="flex items-center gap-1"><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/></svg>{child.roomType}</span>}
+                          {child.bathroomType && <span className="flex items-center gap-1"><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M7 10v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6"/><path d="M3 10h18"/></svg>{child.bathroomType}</span>}
+                          {child.kitchenType && <span className="flex items-center gap-1"><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/></svg>{child.kitchenType}</span>}
+                          {child.size && <span className="flex items-center gap-1"><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/></svg>{child.size}</span>}
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <button
+                          className="text-blue-600 font-semibold flex items-center  hover:underline text-md"
+                          onClick={async () => {
+                            setShowChildModal(true);
+                            setChildLoading(true);
+                            setChildDetails(null);
+                            setChildImages([]);
+                            // Fetch child property details from backend
+                            let childKey = child.slug || child.name || child.projectName;
+                            if (childKey) {
+                              try {
+                                const res = await fetch(`/api/v0/property/${encodeURIComponent(childKey)}`);
+                                const result = await res.json();
+                                let data = result.data || result;
+                                setChildDetails(data);
+                                // Normalize images
+                                let imgs: string[] = [];
+                                if (Array.isArray(data.images) && data.images.length > 0) {
+                                  imgs = data.images
+                                    .map((img: any) => {
+                                      if (typeof img === "string") return img;
+                                      if (typeof img === "object" && img && "url" in img) return img.url;
+                                      return undefined;
+                                    })
+                                    .filter((img: any): img is string => Boolean(img));
+                                }
+                                if (imgs.length === 0) imgs = ["/images/no-image-available.png"];
+                                setChildImages(imgs);
+                              } catch (err) {
+                                setChildDetails(null);
+                                setChildImages(["/images/no-image-available.png"]);
+                              }
+                            }
+                            setChildLoading(false);
+                          }}
+                        >
+                          View More Details <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Child Property Modal */}
+          {showChildModal && (
+            <div className="fixed inset-0 z-50 flex justify-center items-start pt-15 backdrop-blur-md bg-black/40">
+              <div className={`relative rounded-2xl shadow-2xl p-8 w-[90vw] max-w-5xl border-2 transition-colors duration-300 ${isDarkMode ? "bg-black text-white border-blue-900" : "bg-white text-black border-blue-200"}`}>
+                <button
+                  className={`absolute top-4 right-6 text-2xl font-bold transition-colors duration-200 ${isDarkMode ? "text-gray-400 hover:text-gray-200" : "text-gray-400 hover:text-gray-700"}`}
+                  onClick={() => {
+                    setShowChildModal(false);
+                    setChildDetails(null);
+                    setChildImages([]);
+                  }}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+                {childLoading ? (
+                  <div className="text-center py-16">Loading...</div>
+                ) : childDetails ? (
+                  <>
+                    <h2 className="text-3xl font-bold mb-6 text-center tracking-tight">{childDetails.projectName || childDetails.propertyName || 'Property Details'}</h2>
+                    {/* Images Section */}
+                    <div className="mb-8 flex flex-col items-center">
+                      <Image
+                        src={childImages[0]}
+                        alt={childDetails.projectName || 'Property'}
+                        width={400}
+                        height={250}
+                        className="rounded-xl object-cover w-full max-w-md h-[250px]"
+                        style={{ objectFit: "cover" }}
+                      />
+                      <div className="flex gap-2 mt-3 flex-wrap justify-center">
+                        {childImages.map((img, idx) => (
+                          <Image
+                            key={idx}
+                            src={img}
+                            alt={`Child Thumbnail ${idx + 1}`}
+                            width={60}
+                            height={40}
+                            className={`rounded-lg border-2 cursor-pointer ${childImages[0] === img ? 'border-blue-500' : 'border-transparent'}`}
+                            style={{ width: "60px", height: "40px" }}
+                            onClick={() => {
+                              // Move clicked image to first position
+                              setChildImages((prev) => [img, ...prev.filter((i) => i !== img)]);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {/* Details Section */}
+                    <div className="mb-8">
+                      <div className="font-semibold text-xl mb-3 text-left border-b pb-2">Room Details</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8 text-base">
+                        <div><span className="font-semibold">Builder:</span> {childDetails.builderName || '-'}</div>
+                        <div><span className="font-semibold">Type:</span> {childDetails.propertyType || '-'}</div>
+                        <div><span className="font-semibold">Price:</span> {childDetails.price || childDetails.minPrice || '-'}</div>
+                        <div><span className="font-semibold">Location:</span> {childDetails.location || '-'}</div>
+                        <div><span className="font-semibold">Size:</span> {childDetails.minSize ? `${childDetails.minSize}${childDetails.sizeUnit ? ` ${childDetails.sizeUnit}` : ''}` : '-'}</div>
+                        <div><span className="font-semibold">Status:</span> {(childDetails.status || []).join(', ') || '-'}</div>
+                      </div>
+                    </div>
+                    {/* Amenities Section */}
+                    <div className="mb-8">
+                      <div className="font-semibold text-xl mb-3 text-left border-b pb-2">Room Amenities</div>
+                      <div className="text-base">
+                        <span className="font-semibold">Amenities:</span> {(childDetails.amenities || []).join(', ') || '-'}</div>
+                    </div>
+                    {/* Description Section */}
+                    <div>
+                      <div className="font-semibold text-xl mb-3 text-left border-b pb-2">Description</div>
+                      <div className="text-base text-left whitespace-pre-line">{childDetails.description || '-'}</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-16 text-red-500">Failed to load property details.</div>
+                )}
+              </div>
+            </div>
+          )}
           {/* Location */}
           <div className="py-5 grid lg:grid-cols-5 lg:gap-x-5 gap-y-5 !border-b border-gray-400 lg:mx-10 items-center">
             <div className="col-span-2">
@@ -225,7 +446,7 @@ const SingleProperties: React.FC = () => {
             >
               {Array.isArray(property.location) ? (
                 <ul className="grid grid-cols-2 gap-2">
-                  {property.location.map((location, index) => (
+                  {(property.location || []).map((location, index) => (
                     <li key={index} className="flex items-center">
                       <span className="mr-2">•</span> {location}
                     </li>
@@ -253,7 +474,7 @@ const SingleProperties: React.FC = () => {
               }`}
             >
               <ul className="grid grid-cols-2 gap-2">
-                {property.nearby.map((nearby, index) => (
+                {(property.nearby || []).map((nearby, index) => (
                   <li key={index} className="flex items-center">
                     <span className="mr-2">•</span> {nearby}
                   </li>
@@ -278,7 +499,7 @@ const SingleProperties: React.FC = () => {
               }`}
             >
               <ul className="grid grid-cols-2 gap-2">
-                {property.amenities.map((amenitie, index) => (
+                {(property.amenities || []).map((amenitie, index) => (
                   <li key={index} className="flex items-center">
                     <span className="mr-2">•</span> {amenitie}
                   </li>
@@ -303,7 +524,7 @@ const SingleProperties: React.FC = () => {
               }`}
             >
               <ul className="grid grid-cols-2 gap-2">
-                {property.projectHighlights.map((projectHighlight, index) => (
+                {(property.projectHighlights || []).map((projectHighlight, index) => (
                   <li key={index} className="flex items-center">
                     <span className="mr-2">•</span> {projectHighlight}
                   </li>
@@ -328,7 +549,7 @@ const SingleProperties: React.FC = () => {
               }`}
             >
               <ul className="grid grid-cols-2 gap-2">
-                {property.status.map((statu, index) => (
+                {(property.status || []).map((statu, index) => (
                   <li key={index} className="flex items-center">
                     <span className="mr-2">•</span> {statu}
                   </li>

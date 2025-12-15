@@ -19,32 +19,35 @@ type PillarMember = {
   position?: string; // fallback for legacy code
 };
  
-function getImageSrc(member: PillarMember): string {
-  // 1. Check legacy image field
-  if (member.image) {
-    if (member.image.startsWith("http://") || member.image.startsWith("https://")) return member.image;
-    if (member.image.startsWith("/uploads/")) return member.image; // backend static path
-    if (member.image !== "default-profile.png") return `/images/${member.image.replace(/^\/images\//, "")}`;
-  }
-  // 2. Check profileImages array (string or object)
+// Returns the primary image (first in profileImages, or legacy image field)
+function getPrimaryImageSrc(member: PillarMember): string {
+  // 1. Check profileImages array (string or object)
   if (member.profileImages && member.profileImages.length > 0) {
-    for (const img of member.profileImages) {
-      if (typeof img === "object" && img !== null && 'url' in img && typeof img.url === 'string') {
-        const url = img.url;
-        if (url.startsWith("http://") || url.startsWith("https://")) return url;
-        if (url.startsWith("/uploads/")) return url;
-        if (url && url !== "default-profile.png") return `/images/${url.replace(/^\/images\//, "")}`;
-      }
-      if (typeof img === "string") {
-        if (img.startsWith("http://") || img.startsWith("https://")) return img;
-        if (img.startsWith("/uploads/")) return img;
-        if (img !== "default-profile.png") return `/images/${img.replace(/^\/images\//, "")}`;
-      }
+    const img = member.profileImages[0];
+    if (typeof img === "object" && img !== null && 'url' in img && typeof img.url === 'string') {
+      const url = img.url;
+      if (url.startsWith("http://") || url.startsWith("https://")) return url;
+      if (url.startsWith("/uploads/")) return url;
+      if (url && url !== "default-profile.png") return `/images/${url.replace(/^\/images\//, "")}`;
+    }
+    if (typeof img === "string") {
+      if (img.startsWith("http://") || img.startsWith("https://")) return img;
+      if (img.startsWith("/uploads/")) return img;
+      if (img !== "default-profile.png") return `/images/${img.replace(/^\/images\//, "")}`;
     }
   }
+  // 2. Check legacy image field
+  if (member.image) {
+    if (member.image.startsWith("http://") || member.image.startsWith("https://")) return member.image;
+    if (member.image.startsWith("/uploads/")) return member.image;
+    if (member.image !== "default-profile.png") return `/images/${member.image.replace(/^\/images\//, "")}`;
+  }
   // 3. Fallback: use a public avatar service
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`;
-}
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`;
+  }
+
+  // Alias for backward compatibility (fix ReferenceError)
+  const getImageSrc = getPrimaryImageSrc;
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { fetchPillarsByCategory } from "../../services/pillarService";
 import Image from "next/image";
@@ -1119,56 +1122,54 @@ const AboutPage = () => {
         <div className="max-w-7xl mx-auto lg:px-0 mb-[0rem]">
           {/* Desktop/Laptop View - Grid */}
           <div className="hidden lg:block">
-            <div className="flex justify-center">
-              <div className="grid lg:grid-cols-3 gap-4 pb-[0rem]">
-                {strategicForce.map((member) => (
-                  <div key={member._id} className="px-[0.6rem]">
-                    <Link href={`/team/${encodeURIComponent(member.name)}`}>
-                      <div
-                        className={`h-full flex flex-col justify-center items-center px-5 rounded-xl group cursor-pointer ${
-                          isDarkMode
-                            ? "border-2 border-blue-500"
-                            : "border-2 border-blue-500"
-                        }`}
-                      >
-                        <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
-                          <Image
-                            className="w-full h-full object-contain bg-white rounded-xl"
-                            src={getImageSrc(member)}
-                            alt={member.name}
-                            width={240}
-                            height={192}
-                            priority
-                          />
-                        </div>
-                        <div className="flex flex-col py-5 w-full justify-center text-center items-center">
-                          <h1 className="text-blue-500 font-semibold uppercase text-[1rem] leading-[1rem]">
-                            {member.name}
-                          </h1>
-                          <p
-                            className={`capitalize text-[0.9rem] ${
-                              isDarkMode ? "text-white" : "text-gray-500"
-                            }`}
-                          >
-                            {member.position}
-                          </p>
-                          <button
-                            type="button"
-                            className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500"
-                            tabIndex={-1}
-                            aria-label="Say Hello"
-                          >
-                            Say Hello👋{" "}
-                            <span className="text-[1.50rem]">
-                              <FaTelegram />
-                            </span>
-                          </button>
-                        </div>
+            <div className="flex flex-row justify-center gap-4 pb-[0rem]">
+              {strategicForce.map((member) => (
+                <div key={member._id} className="px-[0.6rem]">
+                  <Link href={`/team/${encodeURIComponent(member.name)}`}>
+                    <div
+                      className={`h-full flex flex-col justify-center items-center px-5 rounded-xl group cursor-pointer ${
+                        isDarkMode
+                          ? "border-2 border-blue-500"
+                          : "border-2 border-blue-500"
+                      }`}
+                    >
+                      <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
+                        <Image
+                          className="w-full h-full object-contain bg-white rounded-xl"
+                          src={getImageSrc(member)}
+                          alt={member.name}
+                          width={240}
+                          height={192}
+                          priority
+                        />
                       </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
+                      <div className="flex flex-col py-5 w-full justify-center text-center items-center">
+                        <h1 className="text-blue-500 font-semibold uppercase text-[1rem] leading-[1rem]">
+                          {member.name}
+                        </h1>
+                        <p
+                          className={`capitalize text-[0.9rem] ${
+                            isDarkMode ? "text-white" : "text-gray-500"
+                          }`}
+                        >
+                          {member.position}
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500"
+                          tabIndex={-1}
+                          aria-label="Say Hello"
+                        >
+                          Say Hello👋{" "}
+                          <span className="text-[1.50rem]">
+                            <FaTelegram />
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
 

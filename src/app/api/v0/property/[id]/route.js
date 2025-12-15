@@ -20,10 +20,31 @@ export async function GET(request, context) {
     query.unshift({ _id: id });
   }
 
-  let property = await Property.findOne({
-    $or: query,
-    isActive: true
-  }).lean();
+  // If isActive is not present in the schema, fallback to not filtering by isActive
+  let property;
+  try {
+    // Try to filter by isActive if the field exists
+    property = await Property.findOne({
+      $or: query,
+      isActive: true
+    }).lean();
+    // If not found, try without isActive filter (for legacy data)
+    if (!property) {
+      property = await Property.findOne({ $or: query }).lean();
+    }
+  } catch (e) {
+    // Fallback: try without isActive filter if error
+    property = await Property.findOne({ $or: query }).lean();
+  }
+
+  // If minSize/sizeUnit missing for main project, try to get from a sub-property
+  if (property && (!property.minSize || !property.sizeUnit) && property._id && property.propertyType === 'project') {
+    const sub = await Property.findOne({ parentId: property._id, minSize: { $exists: true, $ne: null } }, { minSize: 1, sizeUnit: 1 }).lean();
+    if (sub) {
+      if (!property.minSize && sub.minSize) property.minSize = sub.minSize;
+      if (!property.sizeUnit && sub.sizeUnit) property.sizeUnit = sub.sizeUnit;
+    }
+  }
 
   if (!property) {
     return new Response(JSON.stringify({ success: false, message: "Property not found" }), { status: 404 });

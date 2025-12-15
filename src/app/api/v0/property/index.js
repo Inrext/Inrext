@@ -497,6 +497,9 @@ const createMultipleProperties = async (req, res) => {
     price: mainProjectPrice, // ✅ Set to price range from sub-properties
     minPrice: priceRange.minPrice, // ✅ Store min price
     maxPrice: priceRange.maxPrice, // ✅ Store max price
+    minSize: otherData.minSize || '',
+    maxSize: otherData.maxSize || '',
+    sizeUnit: otherData.sizeUnit || '',
     paymentPlan: otherData.paymentPlan || 'Flexible',
     status: otherData.status || ['Under Construction'],
     amenities: otherData.amenities || [],
@@ -731,7 +734,7 @@ const getAllProperties = async (req, res) => {
       Property.countDocuments(query)
     ]);
 
-    // For main projects, count sub-properties
+    // For main projects, count sub-properties and ensure minSize/sizeUnit
     if (parentOnly === "true" || parentId === "null") {
       for (let property of properties) {
         const subPropertyCount = await Property.countDocuments({
@@ -739,6 +742,14 @@ const getAllProperties = async (req, res) => {
           isActive: true
         });
         property.subPropertyCount = subPropertyCount;
+        // Ensure minSize/sizeUnit for main project
+        if ((!property.minSize || !property.sizeUnit) && property._id && property.propertyType === 'project') {
+          const sub = await Property.findOne({ parentId: property._id, minSize: { $exists: true, $ne: null } }, { minSize: 1, sizeUnit: 1 }).lean();
+          if (sub) {
+            if (!property.minSize && sub.minSize) property.minSize = sub.minSize;
+            if (!property.sizeUnit && sub.sizeUnit) property.sizeUnit = sub.sizeUnit;
+          }
+        }
       }
     }
 
@@ -752,7 +763,6 @@ const getAllProperties = async (req, res) => {
           })
           .populate("createdBy", "name email")
           .lean();
-          
           property.children = children;
         }
       }
@@ -852,9 +862,8 @@ const getHierarchicalProperties = async (search = "", status, propertyType, loca
     .populate("createdBy", "name email")
     .lean();
 
-  // Get sub-properties for each main project
+  // Get sub-properties for each main project and ensure minSize/sizeUnit
   const hierarchicalData = [];
-  
   for (let project of mainProjects) {
     const subProperties = await Property.find({
       parentId: project._id,
@@ -862,6 +871,15 @@ const getHierarchicalProperties = async (search = "", status, propertyType, loca
     })
     .populate("createdBy", "name email")
     .lean();
+
+    // Ensure minSize/sizeUnit for main project
+    if ((!project.minSize || !project.sizeUnit) && project._id && project.propertyType === 'project') {
+      const sub = subProperties.find(sp => sp.minSize || sp.sizeUnit);
+      if (sub) {
+        if (!project.minSize && sub.minSize) project.minSize = sub.minSize;
+        if (!project.sizeUnit && sub.sizeUnit) project.sizeUnit = sub.sizeUnit;
+      }
+    }
 
     hierarchicalData.push({
       ...project,

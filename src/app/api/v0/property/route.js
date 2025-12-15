@@ -10,8 +10,10 @@ export async function GET(request) {
 	const parentOnly = searchParams.get('parentOnly') === 'true';
 	const search = searchParams.get('search') || "";
 
-	const query = { isActive: true };
-	if (parentOnly) query.parentId = null;
+	const query = {};
+	if (parentOnly) {
+		query.hierarchyLevel = 0;
+	}
 	if (search) {
 		query.$or = [
 			{ projectName: { $regex: search, $options: "i" } },
@@ -22,11 +24,25 @@ export async function GET(request) {
 		];
 	}
 	const skip = (page - 1) * limit;
-	const properties = await Property.find(query)
+	let properties = await Property.find(query)
 		.skip(skip)
 		.limit(limit)
 		.sort({ createdAt: -1 })
 		.lean();
+
+	// Supplement minSize, maxSize, and sizeUnit from a sub-property if missing
+	for (let i = 0; i < properties.length; i++) {
+		const prop = properties[i];
+		if ((!(prop.minSize && prop.sizeUnit)) && prop._id && prop.propertyType === 'project') {
+			const sub = await Property.findOne({ parentId: prop._id, minSize: { $exists: true, $ne: null } }, { minSize: 1, maxSize: 1, sizeUnit: 1 }).lean();
+			if (sub) {
+				if (!prop.minSize && sub.minSize) prop.minSize = sub.minSize;
+				if (!prop.maxSize && sub.maxSize) prop.maxSize = sub.maxSize;
+				if (!prop.sizeUnit && sub.sizeUnit) prop.sizeUnit = sub.sizeUnit;
+			}
+		}
+	}
+
 	const total = await Property.countDocuments(query);
 	const data = {
 		success: true,

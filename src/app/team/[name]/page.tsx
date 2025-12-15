@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -15,18 +14,21 @@ const SingleTeam = () => {
   const [teamMembers, setTeamMembers] = useState<PillarMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [properties, setProperties] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       setError(null);
       try {
-        const v = await fetchPillarsByCategory("the-visionaries");
-        const t1 = await fetchPillarsByCategory("the-strategic-force");
-        const t2 = await fetchPillarsByCategory("the-powerhouse-team");
-        const t3 = await fetchPillarsByCategory("growth-navigators");
-        setVisionaries(v);
-        setTeamMembers([...t1, ...t2, ...t3]);
+        const [visionaries, strategicForce, powerhouseTeam, growthNavigators] = await Promise.all([
+          fetchPillarsByCategory("the-visionaries"),
+          fetchPillarsByCategory("the-strategic-force"),
+          fetchPillarsByCategory("the-powerhouse-team"),
+          fetchPillarsByCategory("growth-navigators"),
+        ]);
+        setVisionaries(visionaries);
+        setTeamMembers([...strategicForce, ...powerhouseTeam, ...growthNavigators]);
       } catch (err) {
         setError("Failed to fetch team data");
       } finally {
@@ -53,6 +55,21 @@ const SingleTeam = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  useEffect(() => {
+    async function fetchProperties() {
+      try {
+        const res = await fetch("/api/v0/property");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setProperties(data.data);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    }
+    fetchProperties();
+  }, []);
+
   // Decode the URL-encoded name and find the team member
   const decodedName = decodeURIComponent(typeof name === "string" ? name : Array.isArray(name) ? name[0] ?? "" : "");
 
@@ -69,11 +86,17 @@ const SingleTeam = () => {
   const member = visionary || teamMember;
   const isVisionary = !!visionary;
 
+
   // Images logic: support both image and profileImages
+  // Show secondary image if available, otherwise fallback to primary
   let memberImages: string[] = [];
   if (member) {
-    if (member.profileImages && member.profileImages.length > 0) {
-      memberImages = member.profileImages.map((img: ProfileImage) => typeof img === 'string' ? img : img.url);
+    if (member.profileImages && member.profileImages.length > 1) {
+      // Use the second image as secondary
+      memberImages = [typeof member.profileImages[1] === 'string' ? member.profileImages[1] : member.profileImages[1].url];
+    } else if (member.profileImages && member.profileImages.length > 0) {
+      // Only one image, use as fallback
+      memberImages = [typeof member.profileImages[0] === 'string' ? member.profileImages[0] : member.profileImages[0].url];
     } else if (member.image) {
       memberImages = [member.image];
     }
@@ -120,20 +143,57 @@ const SingleTeam = () => {
           </p>
         );
       case "projects":
-        if (!member.projects || member.projects.length === 0) {
-          return (
-            <p className={`p-4 ${isDarkMode ? "text-white " : "text-black"}`}>
-              No projects listed
-            </p>
-          );
+        // Fix: get project ids from member.projects array if it exists
+        let projectIds = [];
+        if (Array.isArray(member?.projects) && member.projects.length > 0) {
+          // If member.projects is an array of property ids (strings)
+          if (typeof member.projects[0] === "string") {
+            projectIds = member.projects;
+          } else if (typeof member.projects[0] === "object" && member.projects[0]._id) {
+            // If member.projects is an array of objects with _id
+            projectIds = member.projects.map((p: any) => p._id);
+          }
+        }
+        // If no project id(s) on member, do not show anything
+        if (!properties || properties.length === 0 || projectIds.length === 0) {
+          return null;
+        }
+        const filteredProjects = properties.filter(
+          (project: any) => projectIds.includes(project._id)
+        );
+        if (filteredProjects.length === 0) {
+          return null;
         }
         return (
           <div className="p-4">
-            <ul className={`list-disc pl-6 ${isDarkMode ? "text-white" : "text-black"}`}>
-              {member.projects.map((projectName: string, index: number) => (
-                <li key={index}>{projectName}</li>
-              ))}
-            </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project: any, index: number) => {
+                const imgSrc =
+                  project.images && project.images.length > 0
+                    ? project.images[0].url || project.images[0]  
+                    : project.image || "";
+                return (
+                  <div
+                    key={index}
+                    className="relative rounded-xl overflow-hidden shadow-lg bg-black/30"
+                    style={{ minHeight: "220px" }}
+                  >
+                    {imgSrc && (
+                      <img
+                        src={imgSrc}
+                        alt={project.projectName || `Project ${index + 1}`}
+                        className="w-full h-56 object-cover"
+                      />
+                    )}
+                    <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent px-4 py-3 flex items-end">
+                      <span className="text-white font-bold text-lg drop-shadow-lg">
+                        {project.projectName || project.propertyName || project.name || `Project ${index + 1}`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       case "expertise":
