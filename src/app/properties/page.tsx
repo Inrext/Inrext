@@ -19,19 +19,34 @@ import Image from "next/image";
 
  
 import { propertyService } from "../../services/propertyService";
+import dynamic from "next/dynamic";
 
+const MapView = dynamic(() => import("./MapView"), { ssr: false });
+
+type PropertyImage = string | { url: string };
 type Property = {
-  images?: any;
-  _id?: string;
-  slug?: string;
-  projectName: string;
+  id: number;
   builderName: string;
+  name?: string; // Add name property for form
+  projectName: string;
+  features?: string[];
   description: string;
-  location: string;
-  propertyType: string;
-  propertyName: string;
+  location: string | string[];
+  nearby: string[];
+  amenities: string[];
+  projectHighlights: string[];
+  status: string[];
   price: string;
+  size: string;
   minSize?: string;
+  maxSize?: string;
+  sizeUnit?: string;
+  images: PropertyImage[];
+  locationMap: string;
+  mapLocation?: {
+    lat: number;
+    lng: number;
+  };
 };
 
 const Properties = () => {
@@ -45,9 +60,9 @@ const Properties = () => {
   const cardsPerPage = 8;
 
   // Derived lists for featured and exclusive
-  // Only show parent (main project) cards in featuredProperties, deduplicated by _id
+  // Only show parent (main project) cards in featuredProperties, deduplicated by _id, and isFeatured === true
   const parentFeatured = properties.filter(
-    (p: any) => p.isPublic === true && (!p.parentId || p.parentId === null)
+    (p: any) => p.isPublic === true && p.isFeatured === true && (!p.parentId || p.parentId === null)
   );
   // Deduplicate by _id
   const seen = new Set();
@@ -252,7 +267,7 @@ const Properties = () => {
             className={`dm-serif-display  lg:text-[5rem] md:text-[3.5rem] text-[1.5rem] lg:leading-[5rem] md:leading-[3.8rem] leading-[1.8rem] capitalize text-center ${
               isDarkMode ? "text-blue-500" : "text-white"
             }`}
-          >
+          >  
             Find Your Dream <br /> Property
           </h1>
           <p className="raleway text-white text-center font-semibold lg:text-[1.7rem] md:text-[1.4rem] text-[0.6rem] lg:leading-normal md:leading-[1.8rem] leading-[1rem] uppercase">
@@ -274,7 +289,7 @@ const Properties = () => {
         >
           <div className="flex flex-col gap-y-[0.6rem]">
             <div className="max-w-7xl mx-auto px-6 pb-[0.5rem] flex flex-col justify-center items-center overflow-hidden">
-              <h1 className="dm-serif-display text-center text-blue-500 lg:text-[3.1rem] md:text-[2.1rem] text-[1.5rem] lg:leading-[2.8rem] md:leading-[1.8rem] leading-[1.4rem] capitalize">
+              <h1 className="dm-serif-display text-center  text-blue-500 lg:text-[3.1rem] md:text-[2.1rem] text-[1.5rem] lg:leading-[2.8rem] md:leading-[1.8rem] leading-[1.4rem] capitalize">
                 featured
                 <span
                   className={`cormorant-garamond ps-2 pe-2 ${
@@ -317,7 +332,7 @@ const Properties = () => {
                       >
                         <div className="relative top-[6.8rem] bg-white p-4 rounded w-[16rem] flex flex-col gap-y-2.5">
                           <h1 className="capitalize text-black lg:text-[1.3rem] md:text-[1.2rem] text-[1.1rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] font-semibold flex items-center gap-x-0 ">
-                            <MdOutlineCurrencyRupee />
+                            {/* <MdOutlineCurrencyRupee /> */}
                             <span>{property.price}</span>
                           </h1>
                           <p className="capitalize text-black lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] flex items-center gap-x-0">
@@ -332,12 +347,19 @@ const Properties = () => {
                                 : property.location}
                             </span>
                           </p>
-                          <div className="flex items-center justify-between text-[1rem]">
-                            <p className="capitalize text-black lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] flex items-center gap-x-2">
-                              <SlSizeFullscreen className="" />{" "}
-                              { <span>{property.minSize}</span>  }
-                            </p>
-                          </div>
+                        <div className="flex justify-between items-center mt-auto text-blue-500 font-medium">
+  <p className="flex items-center capitalize lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] gap-x-2">
+    <SlSizeFullscreen />
+    <span>
+      {property.minSize || property.maxSize
+        ? `${property.minSize || ''}${
+            property.maxSize ? ` - ${property.maxSize}` : ''
+          }${property.sizeUnit ? ` ${property.sizeUnit}` : ''}`
+        : '—'}
+    </span>
+  </p>
+</div>
+
                         </div>
                       </div>
                     </Link>
@@ -435,8 +457,13 @@ const Properties = () => {
                       <div className=" relative lg:bottom-[-2.5rem] md:bottom-[-5.8rem] bottom-[-1.2rem] left-0 right-0 flex flex-col gap-y-2.5 lg:pt-3 md:pt-3 pt-2">
                         <div className="flex justify-between mt-auto items-center text-blue-500 font-medium">
                           <p className="flex items-center capitalize text-blue-500 lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem]">
-                            <SlSizeFullscreen className="" />
-                           </p>
+                            <SlSizeFullscreen />
+                            <span>
+                              {properties.minSize || properties.maxSize
+                                ? `${properties.minSize || ''}${properties.maxSize ? ` - ${properties.maxSize}` : ''}${properties.sizeUnit ? ` ${properties.sizeUnit}` : ''}`
+                                : '—'}
+                            </span>
+                          </p>
                         </div>
                         <div className="flex flex-wrap justify-between mt-auto items-center text-blue-500 font-medium">
                           <p className="flex items-center capitalize text-blue-500 lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem]">
@@ -455,7 +482,7 @@ const Properties = () => {
                             </span>
                           </p>
                           <p className="flex items-center capitalize text-blue-500 lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem]">
-                            <MdOutlineCurrencyRupee />
+                            {/* <MdOutlineCurrencyRupee /> */}
                             <span>{properties.price}</span>
                           </p>
                         </div>
