@@ -26,6 +26,13 @@ const MarketPage: React.FC = () => {
     { name: "Dholera", img: "/images/dholeraprime.jpg" },
   ];
 
+  // Scroll to top on mount (fixes scroll position when navigating back)
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     window.scrollTo(0, 0);
+  //   }
+  // }, []);
+
   // Only run animations on client
   useEffect(() => {
     if (typeof window === "undefined") return;

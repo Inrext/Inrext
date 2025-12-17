@@ -7,7 +7,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { IoLocationOutline } from "react-icons/io5";
-import { MdOutlineCurrencyRupee } from "react-icons/md";
+// import { MdOutlineCurrencyRupee } from "react-icons/md";
 import { SlSizeFullscreen } from "react-icons/sl";
 import { FaBed } from "react-icons/fa6";
 import { FiDroplet } from "react-icons/fi";
@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useTheme } from "../content/ThemeContext";
 import Image from "next/image";
 
- 
 import { propertyService } from "../../services/propertyService";
 import dynamic from "next/dynamic";
 
@@ -62,7 +61,10 @@ const Properties = () => {
   // Derived lists for featured and exclusive
   // Only show parent (main project) cards in featuredProperties, deduplicated by _id, and isFeatured === true
   const parentFeatured = properties.filter(
-    (p: any) => p.isPublic === true && p.isFeatured === true && (!p.parentId || p.parentId === null)
+    (p: any) =>
+      p.isPublic === true &&
+      p.isFeatured === true &&
+      (!p.parentId || p.parentId === null)
   );
   // Deduplicate by _id
   const seen = new Set();
@@ -74,12 +76,12 @@ const Properties = () => {
   });
 
   // Runtime warning for duplicate featured cards (for debugging)
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     const ids = parentFeatured.map((p: any) => p._id).filter(Boolean);
     const dupes = ids.filter((id, idx) => ids.indexOf(id) !== idx);
     if (dupes.length > 0) {
       // eslint-disable-next-line no-console
-      console.warn('Duplicate featuredProperties detected (by _id):', dupes);
+      console.warn("Duplicate featuredProperties detected (by _id):", dupes);
     }
   }
   const exclusiveListing = properties;
@@ -93,7 +95,8 @@ const Properties = () => {
     if (hasFetched.current) return;
     hasFetched.current = true;
     setLoading(true);
-    propertyService.getAllProperties('', 1, 100, "true")
+    propertyService
+      .getAllProperties("", 1, 100, "true")
       .then((res) => {
         setProperties(res.data || []);
         setLoading(false);
@@ -222,7 +225,10 @@ const Properties = () => {
   // Pagination logic for exclusiveListing
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentProperties = exclusiveListing.slice(indexOfFirstCard, indexOfLastCard);
+  const currentProperties = exclusiveListing.slice(
+    indexOfFirstCard,
+    indexOfLastCard
+  );
   const totalPages = Math.ceil(exclusiveListing.length / cardsPerPage);
 
   const paginate = (pageNumber: number) => {
@@ -239,6 +245,18 @@ const Properties = () => {
     const y = ((e.clientY - top) / height) * 100;
     setGradientPos({ x, y });
   };
+
+  // Utility: Normalize images (array of string or {url})
+  const normalizeImages = (imgs: PropertyImage[] = []): string[] =>
+    Array.isArray(imgs) && imgs.length > 0
+      ? imgs
+          .map((img) => {
+            if (typeof img === "string") return img;
+            if (typeof img === "object" && img && "url" in img) return img.url;
+            return undefined;
+          })
+          .filter((img): img is string => Boolean(img))
+      : [];
 
   return (
     <>
@@ -267,16 +285,15 @@ const Properties = () => {
             className={`dm-serif-display  lg:text-[5rem] md:text-[3.5rem] text-[1.5rem] lg:leading-[5rem] md:leading-[3.8rem] leading-[1.8rem] capitalize text-center ${
               isDarkMode ? "text-blue-500" : "text-white"
             }`}
-          >  
+          >
             Find Your Dream <br /> Property
           </h1>
           <p className="raleway text-white text-center font-semibold lg:text-[1.7rem] md:text-[1.4rem] text-[0.6rem] lg:leading-normal md:leading-[1.8rem] leading-[1rem] uppercase">
             Your Dream Property is Just a Click Away – Start Your Search Today!
           </p>
-          
         </div>
       </div>
-      
+
       <div
         className={`overflow-hidden  ${
           isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"
@@ -318,16 +335,29 @@ const Properties = () => {
             <div className="slider-container pb-[3rem] overflow-hidden ps-0 pe-[0rem]">
               <Slider {...settings} className=" h-[22rem] pt-[2.5rem]">
                 {featuredProperties.map((property, index) => (
-                  <div key={property._id || property.propertyName || property.projectName} className="px-[0.8rem]">
+                  <div
+                    key={
+                      property._id ||
+                      property.propertyName ||
+                      property.projectName
+                    }
+                    className="px-[0.8rem]"
+                  >
                     <Link
                       href={`/properties/${encodeURIComponent(
-                        property.propertyName.replace(/\s+/g, "-").replace(/-project$/i, '').toLowerCase()
+                        property.propertyName
+                          .replace(/\s+/g, "-")
+                          .replace(/-project$/i, "")
+                          .toLowerCase()
                       )}`}
                     >
                       <div
                         className="cursor-pointer relative h-[12rem] flex flex-col justify-center items-center bg-cover bg-center transition-all duration-500 hover:scale-[1.05] rounded-lg"
                         style={{
-                          backgroundImage: `url('${Array.isArray(property.images) && property.images.length > 0 ? (property.images[0].url || property.images[0]) : ''}')`,
+                          backgroundImage: `url('${(() => {
+                            const imgs = normalizeImages(property.images);
+                            return imgs.length > 0 ? imgs[0] : "";
+                          })()}')`,
                         }}
                       >
                         <div className="relative top-[6.8rem] bg-white p-4 rounded w-[16rem] flex flex-col gap-y-2.5">
@@ -340,26 +370,32 @@ const Properties = () => {
                             <span>
                               {Array.isArray(property.location)
                                 ? property.location[0].length > 15
-                                  ? property.location[0].substring(0, 15) + "..."
+                                  ? property.location[0].substring(0, 15) +
+                                    "..."
                                   : property.location[0]
                                 : property.location.length > 15
                                 ? property.location.substring(0, 15) + "..."
                                 : property.location}
                             </span>
                           </p>
-                        <div className="flex justify-between items-center mt-auto text-blue-500 font-medium">
-  <p className="flex items-center capitalize lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] gap-x-2">
-    <SlSizeFullscreen />
-    <span>
-      {property.minSize || property.maxSize
-        ? `${property.minSize || ''}${
-            property.maxSize ? ` - ${property.maxSize}` : ''
-          }${property.sizeUnit ? ` ${property.sizeUnit}` : ''}`
-        : '—'}
-    </span>
-  </p>
-</div>
-
+                          <div className="flex justify-between items-center mt-auto text-blue-500 font-medium">
+                            <p className="flex items-center capitalize lg:text-[0.9rem] md:text-[0.8rem] text-[0.8rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] gap-x-2">
+                              <SlSizeFullscreen />
+                              <span>
+                                {property.minSize || property.maxSize
+                                  ? `${property.minSize || ""}${
+                                      property.maxSize
+                                        ? ` - ${property.maxSize}`
+                                        : ""
+                                    }${
+                                      property.sizeUnit
+                                        ? ` ${property.sizeUnit}`
+                                        : ""
+                                    }`
+                                  : "—"}
+                              </span>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -369,7 +405,7 @@ const Properties = () => {
             </div>
           </div>
         </div>
-         <div
+        <div
           className="overflow-hidden pb-[3rem]"
           data-aos="fade-up"
           data-aos-duration="1200"
@@ -404,12 +440,19 @@ const Properties = () => {
             <div className="grid lg:grid-cols-2 grid-cols-1  lg:justify-normal justify-center gap-[3.5rem]">
               {currentProperties.map((properties, index) => (
                 <div
-                  key={properties._id || properties.propertyName || properties.projectName}
+                  key={
+                    properties._id ||
+                    properties.propertyName ||
+                    properties.projectName
+                  }
                   className="w-full flex justify-center overflow-hidden lg:description rounded-xl"
                 >
                   <Link
                     href={`/properties/${encodeURIComponent(
-                      properties.propertyName.replace(/\s+/g, "-").replace(/-project$/i, '').toLowerCase()
+                      properties.propertyName
+                        .replace(/\s+/g, "-")
+                        .replace(/-project$/i, "")
+                        .toLowerCase()
                     )}`}
                     className={`flex p-2 lg:gap-2.5 md:gap-2.5 gap-4 lg:description rounded-xl overflow-hidden ${
                       index % 4 < 2 ? "flex-row" : "flex-row-reverse"
@@ -418,7 +461,10 @@ const Properties = () => {
                     {/* Image */}
                     <div className="lg:w-[15rem] md:w-[15rem] w-[12rem] lg:h-[15rem] md:h-[15rem] h-[12rem] ">
                       <Image
-                        src={Array.isArray(properties.images) && properties.images.length > 0 ? (properties.images[0].url || properties.images[0]) : '/images/placeholder.png'}
+                        src={(() => {
+                          const imgs = normalizeImages(properties.images);
+                          return imgs.length > 0 ? imgs[0] : "/images/placeholder.png";
+                        })()}
                         className="w-full h-full lg:description rounded-xl object-cover"
                         alt=""
                         width={240}
@@ -460,8 +506,16 @@ const Properties = () => {
                             <SlSizeFullscreen />
                             <span>
                               {properties.minSize || properties.maxSize
-                                ? `${properties.minSize || ''}${properties.maxSize ? ` - ${properties.maxSize}` : ''}${properties.sizeUnit ? ` ${properties.sizeUnit}` : ''}`
-                                : '—'}
+                                ? `${properties.minSize || ""}${
+                                    properties.maxSize
+                                      ? ` - ${properties.maxSize}`
+                                      : ""
+                                  }${
+                                    properties.sizeUnit
+                                      ? ` ${properties.sizeUnit}`
+                                      : ""
+                                  }`
+                                : "—"}
                             </span>
                           </p>
                         </div>
@@ -537,7 +591,7 @@ const Properties = () => {
             </div>
           </div>
         </div>
-        
+
         <div
           className="overflow-hidden lg: py-[0rem]"
           data-aos="fade-up"
@@ -611,7 +665,7 @@ const Properties = () => {
           <div className="w-[0rem] h-[0rem] absolute  pointer-events-none" />
         </div>
       </div>
-       <div>
+      <div>
         <WhyChooseUs />
       </div>
     </>
