@@ -275,9 +275,9 @@ const Journey: React.FC = () => {
     return () => window.removeEventListener('scroll', debouncedHandleScroll);
   }, [started, calculateDimensions, pathLength, activeMilestone, milestones.length]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
 
   const handleStartClick = (): void => {
     setStarted(true);

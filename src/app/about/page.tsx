@@ -19,35 +19,42 @@ type PillarMember = {
   position?: string; // fallback for legacy code
 };
  
+
+// Utility: Normalize image URL for a profile image (string or object)
+function normalizeProfileImage(img: ProfileImage): string | null {
+  if (!img) return null;
+  if (typeof img === "object" && img !== null && 'url' in img && typeof img.url === 'string') {
+    const url = img.url;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    if (url.startsWith("/uploads/")) return url;
+    if (url && url !== "default-profile.png") return `/images/${url.replace(/^\/images\//, "")}`;
+  }
+  if (typeof img === "string") {
+    if (img.startsWith("http://") || img.startsWith("https://")) return img;
+    if (img.startsWith("/uploads/")) return img;
+    if (img !== "default-profile.png") return `/images/${img.replace(/^\/images\//, "")}`;
+  }
+  return null;
+}
+
 // Returns the primary image (first in profileImages, or legacy image field)
 function getPrimaryImageSrc(member: PillarMember): string {
   // 1. Check profileImages array (string or object)
   if (member.profileImages && member.profileImages.length > 0) {
-    const img = member.profileImages[0];
-    if (typeof img === "object" && img !== null && 'url' in img && typeof img.url === 'string') {
-      const url = img.url;
-      if (url.startsWith("http://") || url.startsWith("https://")) return url;
-      if (url.startsWith("/uploads/")) return url;
-      if (url && url !== "default-profile.png") return `/images/${url.replace(/^\/images\//, "")}`;
-    }
-    if (typeof img === "string") {
-      if (img.startsWith("http://") || img.startsWith("https://")) return img;
-      if (img.startsWith("/uploads/")) return img;
-      if (img !== "default-profile.png") return `/images/${img.replace(/^\/images\//, "")}`;
-    }
+    const normalized = normalizeProfileImage(member.profileImages[0]);
+    if (normalized) return normalized;
   }
   // 2. Check legacy image field
   if (member.image) {
-    if (member.image.startsWith("http://") || member.image.startsWith("https://")) return member.image;
-    if (member.image.startsWith("/uploads/")) return member.image;
-    if (member.image !== "default-profile.png") return `/images/${member.image.replace(/^\/images\//, "")}`;
+    const normalized = normalizeProfileImage(member.image);
+    if (normalized) return normalized;
   }
   // 3. Fallback: use a public avatar service
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`;
-  }
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`;
+}
 
-  // Alias for backward compatibility (fix ReferenceError)
-  const getImageSrc = getPrimaryImageSrc;
+// Alias for backward compatibility (fix ReferenceError)
+const getImageSrc = getPrimaryImageSrc;
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { fetchPillarsByCategory } from "../../services/pillarService";
 import Image from "next/image";
@@ -179,11 +186,11 @@ const AboutPage = () => {
     };
   }, [isVisible, animateCounters]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     window.scrollTo(0, 0);
+  //   }
+  // }, []);
 
   // Add types for arrow props
   type ArrowProps = {

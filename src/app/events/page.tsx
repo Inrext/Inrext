@@ -244,9 +244,9 @@ const Events = () => {
     setActiveIndex4(swiper.realIndex);
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
 
   return (
     <>

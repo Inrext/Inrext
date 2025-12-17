@@ -76,9 +76,9 @@ const SingleProperties: React.FC = () => {
     fetchProperty();
   }, [name]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
 
 
   if (!property) {
