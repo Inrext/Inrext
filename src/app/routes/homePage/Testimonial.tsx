@@ -106,7 +106,7 @@ const Testimonial: React.FC = () => {
         {/* Images Row + Name/Company beside active image */}
         <div className="mt-10 flex items-center justify-center gap-40 md:gap-20 gap-6">
           {/* 2 left (hidden on mobile) */}
-          <div className="hidden md:block">
+          <div className="hidden md:block cursor-pointer" onClick={() => setActiveSlide(getIndex(activeSlide - 2))}>
             <Image
               src={testimonials[getIndex(activeSlide - 2)].image || "/images/placeholder.png"}
               alt=""
@@ -118,7 +118,7 @@ const Testimonial: React.FC = () => {
               priority
             />
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:block cursor-pointer" onClick={() => setActiveSlide(getIndex(activeSlide - 1))}>
             <Image
               src={testimonials[getIndex(activeSlide - 1)].image || "/images/placeholder.png"}
               alt=""
@@ -132,7 +132,7 @@ const Testimonial: React.FC = () => {
           </div>
 
           {/* Active image + Name/Company beside it */}
-          <div className="flex flex-col md:flex-row items-center md:mr-[6rem] gap-3 md:gap-5">
+          <div className="flex flex-col md:flex-row items-center md:mr-[6rem] gap-3 md:gap-5 cursor-pointer" onClick={() => setActiveSlide(activeSlide)}>
             <Image
               src={testimonials[activeSlide].image || "/images/placeholder.png"}
               alt={testimonials[activeSlide].name}
@@ -154,7 +154,7 @@ const Testimonial: React.FC = () => {
           </div>
 
           {/* 2 right (hidden on mobile) */}
-          <div className="hidden md:block">
+          <div className="hidden md:block cursor-pointer" onClick={() => setActiveSlide(getIndex(activeSlide + 1))}>
             <Image
               src={testimonials[getIndex(activeSlide + 1)].image || "/images/placeholder.png"}
               alt=""
@@ -166,7 +166,7 @@ const Testimonial: React.FC = () => {
               priority
             />
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:block cursor-pointer" onClick={() => setActiveSlide(getIndex(activeSlide + 2))}>
             <Image
               src={testimonials[getIndex(activeSlide + 2)].image || "/images/placeholder.png"}
               alt=""

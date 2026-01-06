@@ -223,8 +223,8 @@ const Teams: React.FC = () => {
                     <div
                       className={`h-full flex flex-col justify-center items-center px-5 lg:mx-0 mx-5 rounded-xl group cursor-pointer ${
                         isDarkMode
-                          ? "border-2 border-blue-500"
-                          : "border-2 border-blue-500"
+                          ? "border border-gray-500/30"
+                          : "border border-blue-500/30"
                       }`}
                     >
                       <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
@@ -239,13 +239,8 @@ const Teams: React.FC = () => {
                         <h1 className="text-blue-500 font-semibold uppercase text-[1rem] leading-[1rem]">
                           {member.name}
                         </h1>
-                        <p
-                          className={`capitalize text-[0.9rem] ${
-                            isDarkMode ? "text-white" : "text-gray-500"
-                          }`}
-                        >
-                          {member.position}
-                        </p>
+                         <p className={`capitalize text-[0.9rem] ${isDarkMode ? "text-white" : "text-gray-500"}`}>{member.position || member.designation}</p>
+
                         <Link
                           href="/about"
                           className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500"
