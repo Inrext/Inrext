@@ -13,7 +13,7 @@ const WhatMakeUs: React.FC = () => {
     >
       <div className="overflow-hidden ">
         <div className="max-w-7xl mx-auto px-6 py-[3rem] pb-[0.6rem] flex flex-col justify-center items-center overflow-hidden">
-          <h1 className="dm-serif-display text-center text-blue-500 lg:text-[3.1rem] md:text-[2.2rem] text-[1.5rem] lg:leading-[2.8rem] md:leading-[1.8rem] leading-[1.4rem]">
+          <h1 className="dm-serif-display text-center text-blue-500 lg:text-[3.1rem] md:text-[2.2rem] text-[1.5rem] lg:leading-[3.2rem] md:leading-[1.8rem] leading-[1.4rem]">
             What Makes Us <br />
             <span
               className={`cormorant-garamond  ${
@@ -32,7 +32,7 @@ const WhatMakeUs: React.FC = () => {
               className={`relative flex flex-col justify-center items-center rounded-xl lg:h-[10rem] md:h-[10rem] h-[8rem] lg:w-[14rem] md:w-[14rem] w-[8rem] px-1.5 gap-y-3
                 ${
                   isDarkMode
-                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#5c727d]"
+                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#0f3e7e]"
                     : "bg-white "
                 } shadow-lg backdrop-blur-[6px]`}
             >
@@ -62,7 +62,7 @@ const WhatMakeUs: React.FC = () => {
               className={`relative flex flex-col justify-center items-center rounded-xl lg:h-[10rem] md:h-[10rem] h-[8rem] lg:w-[14rem] md:w-[14rem] w-[8rem] px-1.5 gap-y-3
                 ${
                   isDarkMode
-                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#5c727d]"
+                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#0f3e7e]"
                     : "bg-white "
                 } shadow-lg backdrop-blur-[6px]`}
             >
@@ -90,7 +90,7 @@ const WhatMakeUs: React.FC = () => {
               className={`relative flex flex-col justify-center items-center rounded-xl lg:h-[10rem] md:h-[10rem] h-[8rem] lg:w-[14rem] md:w-[14rem] w-[8rem] px-1.5 gap-y-3
                 ${
                   isDarkMode
-                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#5c727d]"
+                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#0f3e7e]"
                     : "bg-white "
                 } shadow-lg backdrop-blur-[6px]`}
             >
@@ -118,7 +118,7 @@ const WhatMakeUs: React.FC = () => {
               className={`relative flex flex-col justify-center items-center rounded-xl lg:h-[10rem] md:h-[10rem] h-[8rem] lg:w-[14rem] md:w-[14rem] w-[8rem] px-1.5 gap-y-3
                 ${
                   isDarkMode
-                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#5c727d]"
+                    ? "bg-gradient-to-b from-gray-900 from-[0%] to-black to-[100%] border border-[#0f3e7e]"
                     : "bg-white "
                 } shadow-lg backdrop-blur-[6px]`}
             >

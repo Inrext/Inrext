@@ -73,8 +73,8 @@ const AboutHero = () => {
           isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"
         }`}
       >
-        <div className="grid lg:grid-cols-2 md:grid-cols-1 grid-cols-1 max-w-7xl mx-auto lg:px-6 px-5 py-[2rem] md:mt-[5rem] mt-[4.5rem] gap-14">
-          <div className="flex flex-col lg:px-10 justify-center gap-y-[2rem] lg:pt-[0rem]">
+        <div className="grid lg:grid-cols-2    md:grid-cols-1 grid-cols-1 max-w-7xl mx-auto lg:px-6 px-5 py-[2rem] md:mt-[5rem] mt-[4.5rem] gap-14">
+          <div className="flex flex-col lg:px-10 justify-center rounded-4xl  bg-zinc-900  gap-y-[2rem] lg:pt-[3rem] lg:pb-[2rem]">
             <h1 className="dm-serif-display text-blue-500 font-normal lg:text-[3.1rem] md:text-[2.1rem] text-[1.5rem] lg:leading-[2.8rem] md:leading-[1.8rem] leading-[1.4rem]">
               Real Estate, <br /> Reimagined <br /> For You.
             </h1>
@@ -99,7 +99,7 @@ const AboutHero = () => {
           </div>
           <div className="lg:h-full h-[35vh]">
             <Image
-              className="w-full rounded-xl h-full object-cover"
+              className="w-full rounded-4xl h-full object-cover"
               src="/images/about.webp"
               alt="About Us"
               width={800}

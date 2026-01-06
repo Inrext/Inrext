@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
   const { isDarkMode } = useTheme();
   return (
     <div
-      className={` ${isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"}`}
+      className={` ${isDarkMode ? "bg-blue-500 backdrop-blur-md" : "bg-blue-50"}`}
     >
       <div className="lg:mt-[0rem] w-full md:mt-[0rem] mt-[0rem] lg:px-0 px-5 ">
         <div
@@ -33,7 +33,7 @@ const Footer: React.FC = () => {
             className="w-[10rem]"
             src={
               isDarkMode
-                ? "/images/Inrext logo with white tagline.png"
+                ? "/images/Inrext white logo png.png"
                 : "/images/Inrext logo.png"
             }
             alt=""
@@ -164,27 +164,6 @@ const Footer: React.FC = () => {
               </ul>
             </div>
             <div className="flex flex-col lg:items-center md:items-center items-start">
-              <h1
-                className={`md:text-[1.20rem] text-[1.35rem] font-medium ${
-                  isDarkMode ? "text-white" : "text-black"
-                }`}
-              >
-                Cab Vendor Form
-              </h1>
-              <ul
-                className={`py-3 lg:text-[0.9rem] md:text-[0.9rem] text-[0.8rem] leading-[1.5rem] ${
-                  isDarkMode ? "text-white" : "text-black"
-                }`}
-              >
-                <li>
-                  <Link href="/cab-vendor-form" className="flex items-center gap-1 cursor-pointer transform transition-transform duration-500 ease-in-out hover:translate-x-5">
-                    <span>
-                      <IoIosArrowForward className="text-blue-500" />
-                    </span>
-                    Form
-                  </Link>
-                </li>
-              </ul>
             </div>
             <div>
               <h1
@@ -222,7 +201,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div
-          className={`flex flex-wrap md:justify-between justify-center py-5 lg:px-16 ${
+          className={`flex flex-wrap md:justify-between justify-center bg-blue-500 py-5 lg:px-16 ${
             isDarkMode
               ? "bg-black backdrop-blur-md text-white"
               : "bg-blue-50 text-black"

@@ -358,17 +358,10 @@ const Events = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  {/* <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-bold text-lg">{event.title}</h3>
-                      <p className="text-sm">{event.description}</p>
-                    </div>
-                  </div> */}
                 </div>
               </SwiperSlide>
             ))}
-            {/* <div className="w-[4.5rem] h-[1.9rem] bg-white relative rounded-full lg:bottom-[0rem] md:bottom-[0rem] bottom-[0rem] lg:left-[65rem] md:left-[39rem] left-[15.8rem]"></div> */}
-          </Swiper>
+           </Swiper>
 
           {/* Custom Navigation Buttons */}
           <div className="absolute bottom-[-0.4rem] lg:left-[66.4rem] md:left-[40.4rem] left-[17.2rem] lg:right-[1.8rem] md:right-[3.8rem] right-[1.5rem] z-1 flex justify-between transform -translate-y-1/2  px-[0rem]">
@@ -468,17 +461,10 @@ const Events = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  {/* <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-bold text-lg">{event.title}</h3>
-                      <p className="text-sm">{event.description}</p>
-                    </div>
-                  </div> */}
                 </div>
               </SwiperSlide>
             ))}
-            {/* <div className="w-[4.5rem] h-[1.9rem] bg-white relative rounded-full lg:bottom-[0rem] md:bottom-[0rem] bottom-[0rem] lg:left-[65rem] md:left-[39rem] left-[15.8rem]"></div> */}
-          </Swiper>
+           </Swiper>
 
           {/* Custom Navigation Buttons */}
           <div className="absolute bottom-[-0.4rem] lg:left-[66.4rem] md:left-[40.4rem] left-[17.2rem] lg:right-[1.8rem] md:right-[3.8rem] right-[1.5rem] z-1 flex justify-between transform -translate-y-1/2  px-[0rem]">
@@ -579,17 +565,11 @@ const Events = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  {/* <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-bold text-lg">{event.title}</h3>
-                      <p className="text-sm">{event.description}</p>
-                    </div>
-                  </div> */}
+                  
                 </div>
               </SwiperSlide>
             ))}
-            {/* <div className="w-[4.5rem] h-[1.9rem] bg-white relative rounded-full lg:bottom-[0rem] md:bottom-[0rem] bottom-[0rem] lg:left-[65rem] md:left-[39rem] left-[15.8rem]"></div> */}
-          </Swiper>
+           </Swiper>
 
           {/* Custom Navigation Buttons */}
           <div className="absolute bottom-[-0.4rem] lg:left-[66.4rem] md:left-[40.4rem] left-[17.2rem] lg:right-[1.8rem] md:right-[3.8rem] right-[1.5rem] z-1 flex justify-between transform -translate-y-1/2  px-[0rem]">
@@ -690,17 +670,11 @@ const Events = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  {/* <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-bold text-lg">{event.title}</h3>
-                      <p className="text-sm">{event.description}</p>
-                    </div>
-                  </div> */}
+                  
                 </div>
               </SwiperSlide>
             ))}
-            {/* <div className="w-[4.5rem] h-[1.9rem] bg-white relative rounded-full lg:bottom-[0rem] md:bottom-[0rem] bottom-[0rem] lg:left-[65rem] md:left-[39rem] left-[15.8rem]"></div> */}
-          </Swiper>
+           </Swiper>
 
           {/* Custom Navigation Buttons */}
           <div className="absolute bottom-[-0.4rem] lg:left-[66.4rem] md:left-[40.4rem] left-[17.2rem] lg:right-[1.8rem] md:right-[3.8rem] right-[1.5rem] z-1 flex justify-between transform -translate-y-1/2  px-[0rem]">
@@ -801,17 +775,10 @@ const Events = () => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  {/* <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-bold text-lg">{event.title}</h3>
-                      <p className="text-sm">{event.description}</p>
-                    </div>
-                  </div> */}
                 </div>
               </SwiperSlide>
             ))}
-            {/* <div className="w-[4.5rem] h-[1.9rem] bg-white relative rounded-full lg:bottom-[0rem] md:bottom-[0rem] bottom-[0rem] lg:left-[65rem] md:left-[39rem] left-[15.8rem]"></div> */}
-          </Swiper>
+           </Swiper>
 
           {/* Custom Navigation Buttons */}
           <div className="absolute bottom-[-0.4rem] lg:left-[66.4rem] md:left-[40.4rem] left-[17.2rem] lg:right-[1.8rem] md:right-[3.8rem] right-[1.5rem] z-1 flex justify-between transform -translate-y-1/2  px-[0rem]">

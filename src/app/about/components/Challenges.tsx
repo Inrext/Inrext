@@ -28,7 +28,7 @@ const Challenges = () => {
         <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-y-5 ">
           {challenges.map((item, idx) => (
             <div key={idx} className="px-[0.5rem]">
-              <div className={`h-full grid grid-row-2 justify-center items-center relative  rounded-lg ${isDarkMode ? "border border-[#5c727d] rounded-xl" : "border border-[#5c727d] rounded-xl"}`}>
+              <div className={`h-full grid grid-row-2 justify-center items-center relative bg-zinc-900 rounded-lg ${isDarkMode ? " border border-blue-500/30 rounded-xl" : "border border-[#5c727d] rounded-xl"}`}>
                 <div className="p-7 w-full h-full flex justify-center items-center relative">
                   <div className="relative p-1 rounded-full border border-blue-500 z-0">
                     <div className="p-1 rounded-full border border-blue-500">
@@ -41,7 +41,7 @@ const Challenges = () => {
                   <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 h-[1.5rem] w-px bg-gradient-to-t from-transparent via-blue-500 to-transparent" />
                 </div>
                 <div className="flex flex-col justify-center items-center pb-5 px-5">
-                  <h2 className="dm-serif-display text-blue-500 font-normal lg:text-[1.5rem] md:text-[1.3rem] text-[1.2rem] lg:leading-[1.8rem] md:leading-[1.6rem] leading-[1.4rem]">
+                  <h2 className="dm-serif-display text-white font-normal lg:text-[1.5rem] md:text-[1.3rem] text-[1.2rem] lg:leading-[1.8rem] md:leading-[1.6rem] leading-[1.4rem]">
                     {item.title}
                   </h2>
                   <p className={`lg:text-[0.9rem] md:text-[0.9rem] text-[0.8rem] lg:leading-[1.25rem] leading-[1.1rem] text-center ${isDarkMode ? "text-white" : "text-gray-900"} leading-6`}>

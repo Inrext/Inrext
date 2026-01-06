@@ -5,7 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useTheme } from "../../content/ThemeContext";
 import { fetchPillarsByCategory } from "../../../services/pillarService";
-
+import { FaTelegram } from "react-icons/fa";
 const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
 function getImageSrc(member: any) {
@@ -52,15 +52,22 @@ const StrategicForceSection = () => {
             {strategicForce.map((member) => (
               <div key={member._id} className="px-[0.6rem]">
                 <Link href={`/team/${encodeURIComponent(member.name)}`}>
-                  <div className={`h-full flex flex-col justify-center items-center px-5 rounded-xl group cursor-pointer ${isDarkMode ? "border-2 border-blue-500" : "border-2 border-blue-500"}`}>
+                  <div className={`h-full flex flex-col justify-center items-center px-5 rounded-xl group cursor-pointer ${isDarkMode ? "border border-gray-500/30" : "border border-blue-500/30"}`}>
                     <div className="rounded-xl mt-5 w-[15rem] h-[12rem]">
                       <Image className="w-full h-full object-contain bg-white rounded-xl" src={getImageSrc(member)} alt={member.name} width={240} height={192} priority />
                     </div>
                     <div className="flex flex-col py-5 w-full justify-center text-center items-center">
                       <h1 className="text-blue-500 font-semibold uppercase text-[1rem] leading-[1rem]">{member.name}</h1>
                       <p className={`capitalize text-[0.9rem] ${isDarkMode ? "text-white" : "text-gray-500"}`}>{member.position || member.designation}</p>
-                      <button type="button" className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500" tabIndex={-1} aria-label="Say Hello">Say Hello👋</button>
-                    </div>
+ <Link
+                          href="/about"
+                          className="mt-5 italianno-regular w-full flex flex-row items-end justify-between text-white px-4 py-2 rounded-full bg-blue-500"
+                        >
+                          Say Hello👋{" "}
+                          <span className="text-[1.50rem]">
+                            <FaTelegram />
+                          </span>
+                        </Link>                    </div>
                   </div>
                 </Link>
               </div>
