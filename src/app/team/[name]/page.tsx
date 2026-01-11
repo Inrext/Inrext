@@ -1,32 +1,48 @@
-/* eslint-disable no-unused-vars */
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTheme } from "../../content/ThemeContext";
 import Image from "next/image";
-import { fetchPillarsByCategory, PillarMember, ProfileImage } from "../../../services/pillarService";
 
 const SingleTeam = () => {
   const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState("experience");
+  const [isMobile, setIsMobile] = useState(false);
   const { name } = useParams();
-  const [visionaries, setVisionaries] = useState<PillarMember[]>([]);
-  const [teamMembers, setTeamMembers] = useState<PillarMember[]>([]);
+  const [visionaries, setVisionaries] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [properties, setProperties] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       setError(null);
       try {
-        const v = await fetchPillarsByCategory("the-visionaries");
-        const t1 = await fetchPillarsByCategory("the-strategic-force");
-        const t2 = await fetchPillarsByCategory("the-powerhouse-team");
-        const t3 = await fetchPillarsByCategory("growth-navigators");
-        setVisionaries(v);
-        setTeamMembers([...t1, ...t2, ...t3]);
+        // Fetch all categories in parallel from API
+        const [
+          visionariesRes,
+          strategicForceRes,
+          powerhouseTeamRes,
+          growthNavigatorsRes,
+        ] = await Promise.all([
+          fetch("/api/pillar?category=the-visionaries").then((r) => r.json()),
+          fetch("/api/pillar?category=the-strategic-force").then((r) =>
+            r.json()
+          ),
+          fetch("/api/pillar?category=the-powerhouse-team").then((r) =>
+            r.json()
+          ),
+          fetch("/api/pillar?category=growth-navigators").then((r) => r.json()),
+        ]);
+        setVisionaries(Array.isArray(visionariesRes) ? visionariesRes : []);
+        setTeamMembers([
+          ...(Array.isArray(strategicForceRes) ? strategicForceRes : []),
+          ...(Array.isArray(powerhouseTeamRes) ? powerhouseTeamRes : []),
+          ...(Array.isArray(growthNavigatorsRes) ? growthNavigatorsRes : []),
+        ]);
       } catch (err) {
         setError("Failed to fetch team data");
       } finally {
@@ -38,7 +54,8 @@ const SingleTeam = () => {
 
   useEffect(() => {
     // Check screen size on component mount
-    const checkScreenSize = () => {
+   const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint in Tailwind
       if (window.innerWidth < 1024) {
         setActiveTab("bio");
       } else {
@@ -49,12 +66,29 @@ const SingleTeam = () => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
+
   useEffect(() => {
-    window.scrollTo(0, 0);
+    async function fetchProperties() {
+      try {
+        const res = await fetch("/api/v0/property");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setProperties(data.data);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    }
+    fetchProperties();
   }, []);
 
   // Decode the URL-encoded name and find the team member
-  const decodedName = decodeURIComponent(typeof name === "string" ? name : Array.isArray(name) ? name[0] ?? "" : "");
+  const decodedName = decodeURIComponent(
+    typeof name === "string" ? name : Array.isArray(name) ? name[0] ?? "" : ""
+  );
 
   // Find the member in visionaries or teamMembers
   const visionary = visionaries.find(
@@ -62,7 +96,8 @@ const SingleTeam = () => {
   );
   const teamMember = !visionary
     ? teamMembers.find(
-        (member) => member.name.trim().toLowerCase() === decodedName.trim().toLowerCase()
+        (member) =>
+          member.name.trim().toLowerCase() === decodedName.trim().toLowerCase()
       )
     : null;
 
@@ -70,10 +105,23 @@ const SingleTeam = () => {
   const isVisionary = !!visionary;
 
   // Images logic: support both image and profileImages
+  // Show secondary image if available, otherwise fallback to primary
   let memberImages: string[] = [];
   if (member) {
-    if (member.profileImages && member.profileImages.length > 0) {
-      memberImages = member.profileImages.map((img: ProfileImage) => typeof img === 'string' ? img : img.url);
+    if (member.profileImages && member.profileImages.length > 1) {
+      // Use the second image as secondary
+      memberImages = [
+        typeof member.profileImages[1] === "string"
+          ? member.profileImages[1]
+          : member.profileImages[1].url,
+      ];
+    } else if (member.profileImages && member.profileImages.length > 0) {
+      // Only one image, use as fallback
+      memberImages = [
+        typeof member.profileImages[0] === "string"
+          ? member.profileImages[0]
+          : member.profileImages[0].url,
+      ];
     } else if (member.image) {
       memberImages = [member.image];
     }
@@ -94,25 +142,35 @@ const SingleTeam = () => {
       );
     }
     // Original rendering for team members
-    switch (activeTab) {
-      case "bio":
-        return (
-          <>
-            <p
-              className={`p-4 flex flex-col gap-y-[1.5rem] ${
-                isDarkMode ? "text-white " : "text-black"
-              }`}
-            >
-              {member.about}
-              <Link
-                href="/contact"
-                className="flex items-center justify-center w-full text-white px-2 py-2 capitalize text-[0.7rem] lg:rounded-lg rounded-full bg-blue-500 hover:bg-blue-600 font-semibold"
+ switch (activeTab) {
+  case "bio":
+    return (
+      <div className="p-4 flex flex-col gap-y-[1.5rem]">
+        {[member.about, member.about1].map(
+          (text, index) =>
+            text && (
+              <p
+                key={index}
+                className={`lg:text-[0.9rem] md:text-[0.8rem] text-[0.7rem]
+                lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem]
+                ${isDarkMode ? "text-white" : "text-black"}`}
               >
-                schedule meeting
-              </Link>
-            </p>
-          </>
-        );
+                {text}
+              </p>
+            )
+        )}
+
+        <Link
+          href="/contact"
+          className="flex items-center justify-center w-full text-white px-2 py-2 capitalize
+          text-[0.7rem] lg:rounded-lg rounded-full bg-blue-500 hover:bg-blue-600 font-semibold"
+        >
+          schedule meeting
+        </Link>
+      </div>
+    );
+
+
       case "experience":
         return (
           <p className={`p-4 ${isDarkMode ? "text-white " : "text-black"}`}>
@@ -120,20 +178,70 @@ const SingleTeam = () => {
           </p>
         );
       case "projects":
-        if (!member.projects || member.projects.length === 0) {
-          return (
-            <p className={`p-4 ${isDarkMode ? "text-white " : "text-black"}`}>
-              No projects listed
-            </p>
-          );
+        // Fix: get project ids from member.projects array if it exists
+        let projectIds = [];
+        if (Array.isArray(member?.projects) && member.projects.length > 0) {
+          // If member.projects is an array of property ids (strings)
+          if (typeof member.projects[0] === "string") {
+            projectIds = member.projects;
+          } else if (
+            typeof member.projects[0] === "object" &&
+            member.projects[0]._id
+          ) {
+            // If member.projects is an array of objects with _id
+            projectIds = member.projects.map((p: any) => p._id);
+          }
+        }
+        // If no project id(s) on member, do not show anything
+        if (!properties || properties.length === 0 || projectIds.length === 0) {
+          return null;
+        }
+        const filteredProjects = properties.filter((project: any) =>
+          projectIds.includes(project._id)
+        );
+        if (filteredProjects.length === 0) {
+          return null;
         }
         return (
           <div className="p-4">
-            <ul className={`list-disc pl-6 ${isDarkMode ? "text-white" : "text-black"}`}>
-              {member.projects.map((projectName: string, index: number) => (
-                <li key={index}>{projectName}</li>
-              ))}
-            </ul>
+            <div
+              className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${
+                isDarkMode ? "text-white" : "text-black"
+              }`}
+            >
+              {filteredProjects.map((project: any, index: number) => {
+                const imgSrc =
+                  project.images && project.images.length > 0
+                    ? project.images[0].url || project.images[0]
+                    : project.image || "";
+                // Use project.slug or project.name or project._id for the link
+                const projectSlug = project.slug || project.name || project._id;
+                return (
+                  <Link
+                    key={index}
+                    href={projectSlug ? `/properties/${encodeURIComponent(projectSlug)}` : '#'}
+                    className="relative rounded-xl overflow-hidden opacity-50 shadow-lg bg-black/30  hover:scale-110 transition-all duration-500"
+                    style={{ minHeight: "220px" }}
+                  >
+                    {imgSrc && (
+                      <img
+                        src={imgSrc}
+                        alt={project.projectName || `Project ${index + 1}`}
+                        className="w-full h-56 object-cover"
+                      />
+                    )}
+                    <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent px-4 py-3 flex items-end">
+                      <span className="w-full text-white text-center font-bold text-lg block">
+                        {project.projectName ||
+                          project.propertyName ||
+                          project.name ||
+                          `Project ${index + 1}`}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         );
       case "expertise":
@@ -191,7 +299,7 @@ const SingleTeam = () => {
     <div
       className={` ${isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"}`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-[5rem] ">
+         <div className="max-w-7xl mx-auto px-6 py-[5rem] ">
         <div className="grid lg:grid-cols-3 grid-cols-1 lg:gap-x-0 gap-y-0">
           <div className="col-span-1 flex justify-center lg:justify-start relative">
             <div className="flex justify-center relative w-full max-w-[90vw] md:max-w-none">
@@ -206,7 +314,7 @@ const SingleTeam = () => {
               </div>
 
               {/* Centered at the bottom - hidden on small screens */}
-              <div className="absolute lg:block hidden justify-center items-center w-[13.5rem] h-[15.5rem] filter drop-shadow-[0_0_11px_rgba(0,0,0,1)] bottom-0 left-[6.3rem]">
+               <div className="absolute lg:block hidden justify-center items-center w-[13.5rem] h-[15.5rem] filter drop-shadow-[0_0_11px_rgba(0,0,0,1)] bottom-0 left-[6.3rem]">
                 <div className="bg-gray-950 w-[13.5rem] h-[15.5rem] rounded"></div>
               </div>
 
@@ -229,7 +337,7 @@ const SingleTeam = () => {
                 isVisionary ? "lg:top-[6.5rem]" : "lg:bottom-0"
               } bottom-6 lg:gap-y-[1.2rem] md:gap-y-[1rem] gap-y-[0.3rem]`}
             >
-              <h1
+                <h1
                 className={`dm-serif-display lg:text-[3.1rem] md:text-[2.5rem] text-[1.4rem] lg:leading-[2.8rem] md:leading-[1.8rem] leading-[1.4rem] pt-0 ${
                   isDarkMode ? "lg:text-blue-500 text-white" : "text-black"
                 }`}
@@ -241,11 +349,11 @@ const SingleTeam = () => {
                   isDarkMode ? "text-white " : "text-black"
                 }`}
               >
-                {member.position}
+                {member.designation}
               </p>
 
               {member.about && (
-                <p
+                 <p
                   className={`lg:text-[0.9rem] hidden lg:block md:text-[0.8rem] text-[0.7rem] lg:leading-[1.25rem] md:leading-[1.1rem] leading-[1rem] ${
                     isDarkMode ? "text-white " : "text-black"
                   }`}

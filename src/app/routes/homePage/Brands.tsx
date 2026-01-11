@@ -52,7 +52,7 @@ const Brands = () => {
     <div className={`${isDarkMode ? "bg-black backdrop-blur-md" : "bg-blue-50"}`}>
       <div className="overflow-hidden py-[3rem]">
         <div className="max-w-7xl mx-auto px-6 py-[0rem] pb-[0rem] flex flex-col justify-center items-center overflow-hidden">
-          <h1 className="dm-serif-display pb-[0.6rem] lg:text-[3.1rem] md:text-[2.1rem] text-[1.5rem] text-center text-blue-500 lg:leading-[2.8rem] md:leading-[1.8rem] leading-[1.4rem]">
+          <h1 className="dm-serif-display pb-[0.6rem] lg:text-[3.1rem] md:text-[2.1rem] text-[1.5rem] text-center text-blue-500 lg:leading-[3.2rem] md:leading-[1.8rem] leading-[1.4rem]">
             Our
             <span
               className={`cormorant-garamond ps-2 ${

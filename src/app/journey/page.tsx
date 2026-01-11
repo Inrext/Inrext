@@ -275,9 +275,9 @@ const Journey: React.FC = () => {
     return () => window.removeEventListener('scroll', debouncedHandleScroll);
   }, [started, calculateDimensions, pathLength, activeMilestone, milestones.length]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
 
   const handleStartClick = (): void => {
     setStarted(true);
@@ -468,61 +468,7 @@ const Journey: React.FC = () => {
                 });
               }}
             >
-              {/* <svg width="200" height="200" viewBox="0 0 200 200">
-                <defs>
-                  <path
-                    id="topCircle"
-                    d="M100,100 m-75,0 a75,75 0 1,1 150,0"
-                    fill="none"
-                  />
-                  <path
-                    id="bottomCircle"
-                    d="M100,2 m-75,0 a75,75 0 1,0 150,0"
-                    fill="none"
-                  />
-                </defs>
-
-                <text fontSize="13" fill={isDarkMode ? "white" : "black"}>
-                  <textPath
-                    className="tracking-[0.1rem]"
-                    href="#topCircle"
-                    startOffset="50%"
-                    textAnchor="middle"
-                  >
-                    START
-                  </textPath>
-                </text>
-                <text fontSize="13" fill={isDarkMode ? "white" : "black"}>
-                  <textPath
-                    className="tracking-[0.1rem]"
-                    href="#bottomCircle"
-                    startOffset="50%"
-                    textAnchor="middle"
-                  >
-                    AGAIN
-                  </textPath>
-                </text>
-                <foreignObject
-                  x="80"
-                  y="23"
-                  width="40"
-                  height="40"
-                >
-                  <div className="text-blue-500 text-[3rem] flex items-center justify-center hover:text-blue-600 transition-colors duration-300">
-                    <IoArrowUpCircleOutline />
-                  </div>
-                </foreignObject>
-              </svg> */}
             </div>
-
-            {/* Thank You */}
-            {/* <div className="flex items-center justify-center">
-              <p className={`dm-serif-display text-[2.5rem] ${
-                isDarkMode ? "text-blue-400" : "text-blue-500"
-              }`}>
-                Thank<span className="ps-2 cormorant-garamond">You!</span>
-              </p>
-            </div> */}
           </>
         )}
       </div>

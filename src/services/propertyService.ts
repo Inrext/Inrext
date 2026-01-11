@@ -96,7 +96,7 @@ export interface Property {
     type?: string;
   }[];
 
-  isActive?: boolean;
+  // isActive?: boolean;
   createdBy?: string;
   parentId?: string | null;
   parentDetails?: {
@@ -168,7 +168,10 @@ export const propertyService = {
     builderName?: string,
     includeChildren = "false",
     minPrice?: number,
-    maxPrice?: number
+    maxPrice?: number,
+    sizeUnit?: string,
+    minSize?: string,
+    isPublic?: boolean
   ): Promise<PropertyListResponse> => {
     const params: any = { search, page, limit, parentOnly, includeChildren, _t: Date.now() };
     if (parentId) params.parentId = parentId;
@@ -178,6 +181,9 @@ export const propertyService = {
     if (builderName) params.builderName = builderName;
     if (minPrice) params.minPrice = minPrice;
     if (maxPrice) params.maxPrice = maxPrice;
+    if (minSize) params.minSize = minSize;
+    if (sizeUnit) params.sizeUnit = sizeUnit;
+    if (typeof isPublic === 'boolean') params.isPublic = isPublic;
     
     const response = await api.get('/property', { params });
     return response.data;
@@ -383,29 +389,35 @@ export const propertyService = {
     return response.data;
   },
 
-  getMainProjects: async (search = '', page = 1, limit = 100): Promise<PropertyListResponse> => {
+  getMainProjects: async (search = '', page = 1, limit = 100, isPublic?: boolean): Promise<PropertyListResponse> => {
+    const params: any = { search, page, limit, parentOnly: "true" };
+    if (typeof isPublic === 'boolean') params.isPublic = isPublic;
     const response = await api.get('/property', {
-      params: { search, page, limit, parentOnly: "true" }
+      params
     });
     return response.data;
   },
 
-  getSubProperties: async (parentId: string, search = '', page = 1, limit = 100): Promise<PropertyListResponse> => {
+  getSubProperties: async (parentId: string, search = '', page = 1, limit = 100, isPublic?: boolean): Promise<PropertyListResponse> => {
+    const params: any = { 
+      parentId, 
+      search, 
+      page, 
+      limit,
+      action: 'subproperties'
+    };
+    if (typeof isPublic === 'boolean') params.isPublic = isPublic;
     const response = await api.get('/property', {
-      params: { 
-        parentId, 
-        search, 
-        page, 
-        limit,
-        action: 'subproperties'
-      }
+      params
     });
     return response.data;
   },
 
-  getPropertiesWithChildren: async (search = '', page = 1, limit = 100): Promise<PropertyListResponse> => {
+  getPropertiesWithChildren: async (search = '', page = 1, limit = 100, isPublic?: boolean): Promise<PropertyListResponse> => {
+    const params: any = { search, page, limit, includeChildren: "true" };
+    if (typeof isPublic === 'boolean') params.isPublic = isPublic;
     const response = await api.get('/property', {
-      params: { search, page, limit, includeChildren: "true" }
+      params
     });
     return response.data;
   },

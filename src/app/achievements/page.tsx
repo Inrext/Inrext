@@ -8,11 +8,11 @@ import Link from "next/link";
 
 const Achievements = () => {
   const { isDarkMode } = useTheme();
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     window.scrollTo(0, 0);
+  //   }
+  // }, []);
   return (
     <>
       <div

@@ -174,7 +174,7 @@ const propertySchema = new mongoose.Schema(
       default: []
     },
 
-    isActive: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: false },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
@@ -387,7 +387,7 @@ propertySchema.statics.findMainProjects = function() {
 propertySchema.statics.findSubProperties = function(parentId) {
   return this.find({ 
     parentId: parentId,
-    isActive: true 
+    isActive: true
   });
 };
 

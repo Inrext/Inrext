@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
-import { backendApi } from "../../lib/api";
+import api from "../../services/api";
 import { MdClose } from "react-icons/md";
 import { useRouter } from "next/navigation";
 
@@ -215,8 +215,9 @@ const CabVendorForm: React.FC<CabVendorFormProps> = ({ onClose }) => {
         totalKm: parseFloat(totalKm as string)
       }));
 
+
       await Promise.all(
-        bookings.map(booking => backendApi.post('/api/v1/vendor-bookings', booking))
+        bookings.map(booking => api.post('/api/vendor-bookings', booking))
       );
 
       setSubmittedData({
